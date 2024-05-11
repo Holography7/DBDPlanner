@@ -1,0 +1,14 @@
+[project]
+name = "DBDPlanner"
+version = "1.0"
+dependencies = [
+    "pip==24.0",
+    "setuptools==69.5.1",
+    "wheel==0.43.0",
+
+    "numpy==1.26.4",
+    "Pillow==10.3.0",
+]
+
+[project.optional-dependencies]
+installer = ["uv==0.1.39"]
