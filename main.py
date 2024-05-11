@@ -111,7 +111,9 @@ class DBDPlanner:
                         img_overlay_rgba[:, :, 3] / 255.0,
                     )
         # Save result
-        Image.fromarray(img_result).save(f'DBD plan {self.months_str}.jpg')
+        Image.fromarray(img_result).save(
+            f'plans/DBD plan {self.months_str} {self.year}.jpg',
+        )
         print(f"Generated plan on {self.months_str} of {self.year}")
 
     @staticmethod
