@@ -1,6 +1,6 @@
 [project]
 name = "DBDPlanner"
-version = "1.0"
+version = "2.0"
 requires-python = ">=3.12"
 dependencies = [
     "pip==24.0",
