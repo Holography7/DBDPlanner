@@ -4,6 +4,7 @@ from PIL import Image
 
 from constants import BACKGROUND_COLOR, MARGINS, CELL_SIZE, PLACEHOLDERS_PATH
 from enums import WeekdayShort
+from main import DBDPlanner
 from project_types import AxisTuple
 from renderer import PlanRenderer
 
@@ -162,6 +163,11 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
     path = TEST_RESULTS_PATH / "plan.png"
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
+
+
+@cli.command(help='Test creating plan.')
+def create_plan():
+    DBDPlanner(year=2024, month=5).create_plan_image()
 
 
 if __name__ == '__main__':

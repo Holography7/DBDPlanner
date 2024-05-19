@@ -105,16 +105,20 @@ class PlanRenderer:
             column = element_num % self.columns
             row = element_num // self.columns
             placeholder = ImageOps.contain(
-                image=self.placeholders[row + column],
+                image=self.placeholders[row * self.columns + column],
                 size=self.placeholder_size,
                 method=Resampling.LANCZOS,
             )
             x_cell = self.margins.x + column * self.cell_size.x
             # first row is header always
             y_cell = self.margins.y + (row + 1) * self.cell_size.y
+            # size of placeholder may not exactly equal cell size, so needs to
+            #  add insufficient pixels to place placeholder to center of cell
+            x_insufficient = (self.cell_size.x - placeholder.size[0]) // 2
+            y_insufficient = (self.cell_size.y - placeholder.size[1]) // 2
             paste_to = AxisTuple(
-                x=x_cell + self.paddings.x,
-                y=y_cell + self.paddings.y,
+                x=x_cell + self.paddings.x + x_insufficient,
+                y=y_cell + self.paddings.y + y_insufficient,
             )
             self.image.paste(
                 im=placeholder,
