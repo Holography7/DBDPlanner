@@ -2,28 +2,29 @@ from pathlib import Path
 
 from PIL import Image
 
-from constants import BACKGROUND_COLOR, MARGINS, CELL_SIZE, PLACEHOLDERS_PATH
-from enums import WeekdayShort
-from main import DBDPlanner
+from constants import BACKGROUND_COLOR, CELL_SIZE, MARGINS, PLACEHOLDERS_PATH
+from planner import DBDPlanner
 from project_types import AxisTuple
 from renderer import PlanRenderer
 
 try:
     import click
-except ImportError:
-    raise ImportError(
+except ImportError as exc:
+    import_msg = (
         'Unable to import module "click". This is a optional dependency, did '
         'you forgot to install it? (Command to install: "pip install '
         'click==8.1.7" or, if you install uv, "uv pip install click==8.1.7")'
     )
+    raise ImportError(import_msg) from exc
 
 
 TEST_RESULTS_PATH = Path('test_results')
 
 
 @click.group(help='Script for creating images to test generation features.')
-def cli():
-    pass
+def cli() -> None:
+    """Group for command line tests."""
+    click.echo('Started testing tool of DBDPlanner.')
 
 
 @cli.command(help='Test creating background image.')
@@ -70,31 +71,50 @@ def create_background_image(
     margins: tuple[int, int],
     color: str,
 ) -> None:
+    """Test creating background image.
+
+    :param int columns: count columns
+    :param int rows: count rows
+    :param tuple[int, int] cell_size: width and height of cell
+    :param tuple[int, int] margins: margins on x (left and right) and y (top
+     and bottom) axes between borders of image and plan.
+    :param str color: HTML-style name of background color.
+    :return: None
+    """
     click.echo('Initializing PlanRenderer...')
-    headers = tuple(str(i) for i in range(columns))
-    elements = tuple(str(i) for i in range(columns * rows))
-    placeholder = Image.open(Path('images/ash.png'))
-    placeholders = tuple(placeholder for _ in range(columns * rows))
     renderer = PlanRenderer(
-        headers=headers,
-        elements=elements,
-        placeholders=placeholders,
-        cell_size=AxisTuple(cell_size[0], cell_size[1]),
-        margins=AxisTuple(margins[0], margins[1]),
-        background_color=color,
+        dimensions=AxisTuple(x=columns, y=rows),
+        cell_size=AxisTuple(x=cell_size[0], y=cell_size[1]),
+        margins=AxisTuple(x=margins[0], y=margins[1]),
     )
-    path = TEST_RESULTS_PATH / "background.png"
+    click.echo('Running method "create_background_image"...')
+    renderer.create_background_image(background_color=color)
+    path = TEST_RESULTS_PATH / 'background.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
 
 
 @cli.command(help='Test drawing of plan header.')
-def draw_header() -> None:
+@click.option(
+    '--columns',
+    default=1,
+    help='Count of columns, default 1.',
+    type=int,
+)
+def draw_header(columns: int) -> None:
+    """Test drawing of plan header.
+
+    :param int columns: count columns
+    :return: None
+    """
+    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=0))
     click.echo('Preparing background...')
-    renderer = PlanRenderer(headers=WeekdayShort, elements=(), placeholders=())
+    renderer.create_background_image()
+    click.echo('Preparing headers...')
+    headers = tuple(str(i) for i in range(columns))
     click.echo('Running method "draw_header"...')
-    renderer.draw_header()
-    path = TEST_RESULTS_PATH / "header.png"
+    renderer.draw_header(headers=headers)
+    path = TEST_RESULTS_PATH / 'header.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
 
@@ -123,6 +143,15 @@ def draw_header() -> None:
     type=str,
 )
 def draw_plan(columns: int, rows: int, placeholder: str) -> None:
+    """Test drawing plan image by PlanRenderer.
+
+    This test excluding planner logic, that contains calculation like calendar.
+    :param int columns: count columns
+    :param int rows: count rows
+    :param str placeholder: filename of placeholder that will fill all cells.
+     Alias "all" available to test on all placeholders in "images" directory.
+    :return: None
+    """
     if placeholder == 'all':
         placeholders_files = (
             'ash.png',
@@ -138,12 +167,10 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
     else:
         placeholder_path = PLACEHOLDERS_PATH / placeholder
         if not placeholder_path.exists():
-            raise ValueError(
-                f'Placeholder "{placeholder_path}" does not exists.',
-            )
+            msg = f'Placeholder "{placeholder_path}" does not exists.'
+            raise ValueError(msg)
         placeholder_paths = (placeholder_path,)
     click.echo('Preparing data...')
-    headers = tuple(str(i) for i in range(columns))
     elements = tuple(str(i) for i in range(columns * rows))
     placeholders_sources = tuple(
         Image.open(placeholder_path) for placeholder_path in placeholder_paths
@@ -152,21 +179,23 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
         placeholders_sources[i % len(placeholders_sources)]
         for i in range(columns * rows)
     )
+    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=rows))
     click.echo('Preparing background...')
-    renderer = PlanRenderer(
-        headers=headers,
-        elements=elements,
-        placeholders=placeholders,
-    )
+    renderer.create_background_image()
     click.echo('Running method "draw_plan"...')
-    renderer.draw_plan()
-    path = TEST_RESULTS_PATH / "plan.png"
+    renderer.draw_plan(elements=elements, placeholders=placeholders)
+    path = TEST_RESULTS_PATH / 'plan.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
 
 
 @cli.command(help='Test creating plan.')
-def create_plan():
+def create_plan() -> None:
+    """Test creating plan.
+
+    This test contains calendar logic, so it's closest to testing all features.
+    :return: None
+    """
     DBDPlanner(year=2024, month=5).create_plan_image()
 
 

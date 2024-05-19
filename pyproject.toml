@@ -14,3 +14,121 @@ dependencies = [
 [project.optional-dependencies]
 installer = ["uv==0.1.39"]
 tests = ["click==8.1.7"]
+dev_tools = [
+    "cfgv==3.4.0",
+    "distlib==0.3.8",
+    "filelock==3.14.0",
+    "identify==2.5.36",
+    "nodeenv==1.8.0",
+    "platformdirs==4.2.2",
+    "pre-commit==3.7.1",
+    "pyyaml==6.0.1",
+    "ruff==0.4.4",
+    "virtualenv==20.26.2",
+]
+
+[tool.ruff]
+line-length = 79
+extend-exclude = [".venv*"]
+fix = true
+show-fixes = true
+
+[tool.ruff.lint]
+select = [
+    "A",
+    # "AIR",  # there is no Airflow
+    "ANN",
+    "ARG",
+    # "ASYNC",  # may come in handy in future
+    "B",
+    "BLE",
+    "C4",
+    "C901",
+    "COM",
+    "D",
+    # "DTZ",  # not sure that needed
+    "FBT",
+    "E",
+    "E101",
+    "E401",
+    "E402",
+    "E501",
+    "E701",
+    "E702",
+    "E703",
+    "E711",
+    "E712",
+    "E713",
+    "E714",
+    "E721",
+    "E722",
+    "E731",
+    "E741",
+    "E742",
+    "E743",
+    "E902",
+    "E999",
+    "EM",
+    "ERA",
+    "EXE",
+    "F",
+    "FA",
+    # "FIX",  # sometimes it's hardto fix it
+    "FLY",
+    # "FURB",  # unstable, but come in handy
+    "G",
+    "I",
+    "ICN",
+    "INP",
+    "INT",
+    "ISC",
+    "LOG",
+    "N",
+    # "NPY",  # there is no NumPy
+    # "PD",  # there is no Pandas
+    "PERF",
+    "PGH",
+    "PIE",
+    "PL",
+    # "PT",  # someday I will add some tests...
+    "PYI",
+    "Q",
+    "R",
+    "RET",
+    "RSE",
+    "RUF",
+    "PTH",
+    "S",  # not sure that needed, but no errors from that
+    "SLF",
+    "SLOT",
+    "SIM",
+    "T10",
+    "T20",
+    "TCH",
+    "TD",
+    "TID",
+    # "TRIO",  # may come in handy in future
+    "TRY",
+    "UP",
+    "W",
+    "YTT",
+]
+ignore = [
+    "D100",  # this rule forces to write many docs that I think not required
+    "D203",  # just alternative for D211
+    "D213",  # just alternative for D212
+    "S201",  # it's not Flask app
+    "S308",  # it's not Django app
+    "S610",  # it's not Django app
+    "S611",  # it's not Django app
+    "TD003",  # not planning write to do with issues link
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"

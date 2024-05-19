@@ -1,17 +1,21 @@
 from types import MappingProxyType
+from typing import Self
 
 from PIL import ImageFont
 from PIL.ImageFont import FreeTypeFont
 
-from constants import FONTS_PATH, FONT_SIZE
+from constants import FONT_SIZE, FONTS_PATH
 from singleton import Singleton
 
 
 class FontLibrary(metaclass=Singleton):
-    """Singleton class that loads fonts and store them. It's singleton to
-    prevent multiple loads."""
+    """Singleton class that loads fonts and store them.
 
-    def __init__(self) -> None:
+    Singleton required to prevent multiple loads.
+    """
+
+    def __init__(self: Self) -> None:
+        """Initialize fonts."""
         self.__fonts: dict[str, FreeTypeFont] = MappingProxyType(
             {
                 path.stem: ImageFont.truetype(font=path, size=FONT_SIZE)
@@ -19,7 +23,12 @@ class FontLibrary(metaclass=Singleton):
             },
         )
 
-    def __getitem__(self, item: str) -> FreeTypeFont:
+    def __getitem__(self: Self, item: str) -> FreeTypeFont:
+        """Get font."""
         if not isinstance(item, str):
-            raise KeyError(f'Key must be string, got {type(item)}')
+            msg = f'Key must be string, got {type(item)}'
+            raise KeyError(msg)
         return self.__fonts[item]
+
+
+FONT_LIBRARY = FontLibrary()
