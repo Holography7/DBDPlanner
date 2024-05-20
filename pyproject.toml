@@ -19,13 +19,25 @@ dev_tools = [
     "distlib==0.3.8",
     "filelock==3.14.0",
     "identify==2.5.36",
+    "mypy==1.10.0",
+    "mypy-extensions==1.0.0",
     "nodeenv==1.8.0",
     "platformdirs==4.2.2",
     "pre-commit==3.7.1",
     "pyyaml==6.0.1",
     "ruff==0.4.4",
+    "typing-extensions==4.11.0",
     "virtualenv==20.26.2",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+no_implicit_optional = true
+check_untyped_defs = true
+show_error_codes = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
 
 [tool.ruff]
 line-length = 79
