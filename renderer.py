@@ -23,12 +23,15 @@ from project_types import AxisTuple
 class PlanRenderer:
     """Class that provides to draw image."""
 
-    def __init__(
+    # actually, there is 5 arguments, exclude self, so ignoring PLR0913 is
+    # justified. But don't add any others arguments!
+    def __init__(  # noqa: PLR0913
         self: Self,
         dimensions: AxisTuple,
         cell_size: AxisTuple = CELL_SIZE,
         margins: AxisTuple = MARGINS,
         paddings: AxisTuple = PADDINGS,
+        background_color: str = BACKGROUND_COLOR,
     ) -> None:
         """Initialize background image to render plan on it.
 
@@ -39,6 +42,8 @@ class PlanRenderer:
         :param AxisSize margins: two numbers of margins between borders
          of image and plan. First number set margins from left and right,
          second from top and bottom. Default: (50, 0).
+        :param str background_color: background color name like in HTML.
+         Default: "black".
         :returns: None
         """
         max_x_padding = cell_size.x // 2
@@ -57,30 +62,17 @@ class PlanRenderer:
             x=cell_size.x - paddings.x * 2,
             y=cell_size.y - paddings.y * 2,
         )
-        self.image: Image.Image | None = None
-        self.draw: ImageDraw.ImageDraw | None = None
-
-    def create_background_image(
-        self: Self,
-        background_color: str = BACKGROUND_COLOR,
-    ) -> None:
-        """Create background image.
-
-        :param str background_color: background color name like in HTML.
-         Default: "black".
-        :return: None
-        """
-        image_width = self.cell_size.x * self.dimensions.x + self.margins.x * 2
+        image_width = cell_size.x * dimensions.x + margins.x * 2
         # plan must contain at least 1 row for header
-        rows_with_header = self.dimensions.y + 1
-        image_height = self.cell_size.y * rows_with_header + self.margins.y * 2
+        rows_with_header = dimensions.y + 1
+        image_height = cell_size.y * rows_with_header + margins.y * 2
         image_size = (image_width, image_height)
-        self.image = Image.new(
+        self.image: Image.Image = Image.new(
             mode=PILLOW_MODE,
             size=image_size,
             color=background_color,
         )
-        self.draw = ImageDraw.Draw(self.image)
+        self.draw: ImageDraw.ImageDraw = ImageDraw.Draw(self.image)
 
     def draw_header(
         self: Self,

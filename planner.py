@@ -86,9 +86,9 @@ class DBDPlanner:
         columns = len(WeekdayShort)
         rows = math.ceil(len(elements) / columns)
         dimensions = AxisTuple(x=columns, y=rows)
+        headers = tuple(weekday.value for weekday in WeekdayShort)
         renderer = PlanRenderer(dimensions=dimensions)
-        renderer.create_background_image()
-        renderer.draw_header(headers=WeekdayShort)
+        renderer.draw_header(headers=headers)
         renderer.draw_plan(elements=elements, placeholders=placeholders)
         months_str = f'{current_month_name}-{next_month_name}'
         plan_filename = f'DBD plan {months_str} {self.year}.png'

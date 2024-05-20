@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Self
+from typing import Any, ClassVar
 
 
 class Singleton(type):
@@ -7,10 +7,10 @@ class Singleton(type):
     Do not use this metaclass to just make some stuff the single source!
     """
 
-    _instances: ClassVar[dict[Self, Self]] = {}
+    _instances: ClassVar[dict] = {}
 
     # probably not correct typing of return value
-    def __call__(cls: Self, *args: Any, **kwargs: Any) -> Self:  # noqa: ANN401
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN101 ANN401
         """Return single instance of class.
 
         :param Any args: positional arguments for creating class instance.

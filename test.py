@@ -86,9 +86,8 @@ def create_background_image(
         dimensions=AxisTuple(x=columns, y=rows),
         cell_size=AxisTuple(x=cell_size[0], y=cell_size[1]),
         margins=AxisTuple(x=margins[0], y=margins[1]),
+        background_color=color,
     )
-    click.echo('Running method "create_background_image"...')
-    renderer.create_background_image(background_color=color)
     path = TEST_RESULTS_PATH / 'background.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
@@ -107,9 +106,8 @@ def draw_header(columns: int) -> None:
     :param int columns: count columns
     :return: None
     """
-    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=0))
     click.echo('Preparing background...')
-    renderer.create_background_image()
+    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=0))
     click.echo('Preparing headers...')
     headers = tuple(str(i) for i in range(columns))
     click.echo('Running method "draw_header"...')
@@ -179,9 +177,8 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
         placeholders_sources[i % len(placeholders_sources)]
         for i in range(columns * rows)
     )
-    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=rows))
     click.echo('Preparing background...')
-    renderer.create_background_image()
+    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=rows))
     click.echo('Running method "draw_plan"...')
     renderer.draw_plan(elements=elements, placeholders=placeholders)
     path = TEST_RESULTS_PATH / 'plan.png'

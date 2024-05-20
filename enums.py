@@ -1,4 +1,4 @@
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum
 
 
 class Grade(IntEnum):
@@ -11,7 +11,7 @@ class Grade(IntEnum):
     IRIDESCENT = 5
 
 
-class WeekdayShort(StrEnum):
+class WeekdayShort(Enum):
     """Enum of weekdays, limited 3 letters."""
 
     MONDAY = 'Mon'
