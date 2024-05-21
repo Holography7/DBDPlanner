@@ -1,3 +1,4 @@
+from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Self
 
@@ -17,12 +18,12 @@ class FontLibrary(metaclass=Singleton):
     Singleton required to prevent multiple loads.
     """
 
-    def __init__(self: Self) -> None:
+    def __init__(self: Self, path: Path = FONTS_PATH) -> None:
         """Initialize fonts."""
         self.__fonts: Mapping[str, FreeTypeFont] = MappingProxyType(
             {
                 path.stem: ImageFont.truetype(font=path, size=FONT_SIZE)
-                for path in FONTS_PATH.iterdir()
+                for path in path.iterdir()
             },
         )
 
@@ -32,6 +33,3 @@ class FontLibrary(metaclass=Singleton):
             msg = f'Key must be string, got {type(item)}'
             raise KeyError(msg)
         return self.__fonts[item]
-
-
-FONT_LIBRARY = FontLibrary()

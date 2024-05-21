@@ -1,8 +1,18 @@
+import logging
 from pathlib import Path
 
 from PIL import Image
 
-from constants import BACKGROUND_COLOR, CELL_SIZE, MARGINS, PLACEHOLDERS_PATH
+from constants import (
+    BACKGROUND_COLOR,
+    CELL_SIZE,
+    FONT,
+    FONTS_PATH,
+    MARGINS,
+    PLACEHOLDERS_PATH,
+    PLANS_PATH,
+)
+from font_library import FontLibrary
 from planner import DBDPlanner
 from project_types import AxisTuple
 from renderer import PlanRenderer
@@ -18,7 +28,11 @@ except ImportError as exc:
     raise ImportError(import_msg) from exc
 
 
-TEST_RESULTS_PATH = Path('test_results')
+TEST_RESULTS_PATH = Path('manual_test_results')
+TEST_FONTS_PATH = Path.cwd().parent / FONTS_PATH
+TEST_PLACEHOLDERS_PATH = Path.cwd().parent / PLACEHOLDERS_PATH
+TEST_PLANS_FOLDER = Path.cwd().parent / PLANS_PATH
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
 @click.group(help='Script for creating images to test generation features.')
@@ -106,12 +120,13 @@ def draw_header(columns: int) -> None:
     :param int columns: count columns
     :return: None
     """
+    click.echo('Preparing data...')
+    headers = tuple(str(i) for i in range(columns))
+    font = FontLibrary(path=TEST_FONTS_PATH)[FONT]
     click.echo('Preparing background...')
     renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=0))
-    click.echo('Preparing headers...')
-    headers = tuple(str(i) for i in range(columns))
     click.echo('Running method "draw_header"...')
-    renderer.draw_header(headers=headers)
+    renderer.draw_header(headers=headers, font=font)
     path = TEST_RESULTS_PATH / 'header.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
@@ -134,9 +149,9 @@ def draw_header(columns: int) -> None:
     '--placeholder',
     default='ash.png',
     help=(
-        f'Filename of image from "{PLACEHOLDERS_PATH}" directory that need to '
-        f'use as placeholder, default "ash.png". Type "all" to try all '
-        f'placeholders.'
+        f'Filename of image from "{TEST_PLACEHOLDERS_PATH}" directory that '
+        f'need to use as placeholder, default "ash.png". Type "all" to try '
+        f'all placeholders.'
     ),
     type=str,
 )
@@ -159,7 +174,7 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
             'iridescent.png',
         )
         placeholder_paths = tuple(
-            PLACEHOLDERS_PATH / placeholder_file
+            TEST_PLACEHOLDERS_PATH / placeholder_file
             for placeholder_file in placeholders_files
         )
     else:
@@ -177,10 +192,11 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
         placeholders_sources[i % len(placeholders_sources)]
         for i in range(columns * rows)
     )
+    font = FontLibrary(path=TEST_FONTS_PATH)[FONT]
     click.echo('Preparing background...')
     renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=rows))
     click.echo('Running method "draw_plan"...')
-    renderer.draw_plan(elements=elements, placeholders=placeholders)
+    renderer.draw_plan(elements=elements, placeholders=placeholders, font=font)
     path = TEST_RESULTS_PATH / 'plan.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
@@ -193,7 +209,14 @@ def create_plan() -> None:
     This test contains calendar logic, so it's closest to testing all features.
     :return: None
     """
-    DBDPlanner(year=2024, month=5).create_plan_image()
+    # initialize fonts with path from tests
+    FontLibrary(path=TEST_FONTS_PATH)
+    planner = DBDPlanner(
+        year=2024,
+        month=5,
+        placeholders_path=TEST_PLACEHOLDERS_PATH,
+    )
+    planner.create_plan_image(save_to=TEST_PLANS_FOLDER)
 
 
 if __name__ == '__main__':

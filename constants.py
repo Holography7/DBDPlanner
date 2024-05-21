@@ -3,7 +3,6 @@ from pathlib import Path
 from project_types import AxisTuple
 
 DAY_WHEN_PERIOD_CHANGES = 13
-DAYS_OF_FIRST_PERIOD_TO_UPGRADE = 4
 PILLOW_MODE = 'RGBA'
 BACKGROUND_COLOR = 'black'
 FONTS_PATH = Path('fonts')
