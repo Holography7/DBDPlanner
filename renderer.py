@@ -9,14 +9,12 @@ from PIL.ImageFont import FreeTypeFont
 from constants import (
     BACKGROUND_COLOR,
     CELL_SIZE,
-    FONT,
     MARGINS,
     PADDINGS,
     PILLOW_MODE,
     TEXT_ANCHOR,
     TEXT_COLOR,
 )
-from font_library import FONT_LIBRARY
 from project_types import AxisTuple
 
 
@@ -77,7 +75,7 @@ class PlanRenderer:
     def draw_header(
         self: Self,
         headers: Sequence[str],
-        font: FreeTypeFont = FONT_LIBRARY[FONT],
+        font: FreeTypeFont,
     ) -> None:
         """Draw header like in month calendar: Mon, Tue, Wed etc.
 
@@ -100,7 +98,7 @@ class PlanRenderer:
         self: Self,
         elements: Sequence[str],
         placeholders: Sequence[Image.Image],
-        font: FreeTypeFont = FONT_LIBRARY[FONT],
+        font: FreeTypeFont,
     ) -> None:
         """Draw plan.
 
