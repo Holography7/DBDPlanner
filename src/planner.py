@@ -7,16 +7,16 @@ from typing import Self
 
 from PIL import Image
 
-from constants import (
+from src.constants import (
     DAY_WHEN_PERIOD_CHANGES,
     FONT,
     PLACEHOLDERS_PATH,
     PLANS_PATH,
 )
-from enums import Grade, WeekdayShort
-from font_library import FontLibrary
-from project_types import AxisTuple
-from renderer import PlanRenderer
+from src.enums import Grade, WeekdayShort
+from src.font_library import FontLibrary
+from src.renderer import PlanRenderer
+from src.types import AxisTuple
 
 
 class DBDPlanner:
