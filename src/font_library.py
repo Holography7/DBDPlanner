@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Self
 from PIL import ImageFont
 from PIL.ImageFont import FreeTypeFont
 
-from constants import FONT_SIZE, FONTS_PATH
-from singleton import Singleton
+from src.constants import FONT_SIZE, FONTS_PATH
+from src.singleton import Singleton
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

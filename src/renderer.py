@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageOps
 from PIL.Image import Resampling
 from PIL.ImageFont import FreeTypeFont
 
-from constants import (
+from src.constants import (
     BACKGROUND_COLOR,
     CELL_SIZE,
     MARGINS,
@@ -15,7 +15,7 @@ from constants import (
     TEXT_ANCHOR,
     TEXT_COLOR,
 )
-from project_types import AxisTuple
+from src.types import AxisTuple
 
 
 class PlanRenderer:

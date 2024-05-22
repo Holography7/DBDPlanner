@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from project_types import AxisTuple
+from src.types import AxisTuple
 
 DAY_WHEN_PERIOD_CHANGES = 13
 PILLOW_MODE = 'RGBA'

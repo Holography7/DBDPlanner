@@ -3,8 +3,8 @@
 import datetime
 import logging
 
-from constants import DAY_WHEN_PERIOD_CHANGES
-from planner import DBDPlanner
+from src.constants import DAY_WHEN_PERIOD_CHANGES
+from src.planner import DBDPlanner
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(message)s', level=logging.INFO)
