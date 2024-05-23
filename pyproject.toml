@@ -7,13 +7,14 @@ dependencies = [
     "setuptools==69.5.1",
     "wheel==0.43.0",
 
+    "click==8.1.7",
     "numpy==1.26.4",
     "Pillow==10.3.0",
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.1.39"]
-tests = ["click==8.1.7"]
+installer = ["uv==0.2.2"]
+tests = []
 dev_tools = [
     "cfgv==3.4.0",
     "distlib==0.3.8",
@@ -25,7 +26,7 @@ dev_tools = [
     "platformdirs==4.2.2",
     "pre-commit==3.7.1",
     "pyyaml==6.0.1",
-    "ruff==0.4.4",
+    "ruff==0.4.5",
     "typing-extensions==4.11.0",
     "virtualenv==20.26.2",
 ]

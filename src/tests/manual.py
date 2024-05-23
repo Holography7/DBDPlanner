@@ -1,6 +1,8 @@
+import datetime
 import logging
 from pathlib import Path
 
+import click
 from PIL import Image
 
 from src.constants import (
@@ -14,17 +16,6 @@ from src.font_library import FontLibrary
 from src.planner import DBDPlanner
 from src.renderer import PlanRenderer
 from src.types import AxisTuple
-
-try:
-    import click
-except ImportError as exc:
-    import_msg = (
-        'Unable to import module "click". This is a optional dependency, did '
-        'you forgot to install it? (Command to install: "pip install '
-        'click==8.1.7" or, if you install uv, "uv pip install click==8.1.7")'
-    )
-    raise ImportError(import_msg) from exc
-
 
 TEST_RESULTS_PATH = Path('src/tests/manual_test_results')
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -198,15 +189,24 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
 
 
 @cli.command(help='Test creating plan.')
-def create_plan() -> None:
+@click.option(
+    '--date',
+    '-d',
+    default=datetime.date.today(),
+    help=(
+        'Date in period between 13th days of two months in ISO format '
+        '(2024-05-23). For example, if you type date 2024-05-23, script will '
+        'create plan between 13th May and 13th June of 2024, but if type '
+        '2024-05-12, then it will create between 13th April and 13th May of '
+        '2024. Default is today.'
+    ),
+    type=str,
+)
+def create_plan(date: datetime.date | str) -> None:
     """Test creating plan.
 
     This test contains calendar logic, so it's closest to testing all features.
     :return: None
     """
-    planner = DBDPlanner(
-        year=2024,
-        month=5,
-        placeholders_path=PLACEHOLDERS_PATH,
-    )
+    planner = DBDPlanner(date=date, placeholders_path=PLACEHOLDERS_PATH)
     planner.create_plan_image(save_to=TEST_RESULTS_PATH)
