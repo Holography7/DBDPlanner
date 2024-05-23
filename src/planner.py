@@ -24,14 +24,12 @@ class DBDPlanner:
 
     def __init__(
         self: Self,
-        year: int,
-        month: int,
+        date: datetime.date | str,
         placeholders_path: Path = PLACEHOLDERS_PATH,
     ) -> None:
         """Initialize planner object.
 
-        :param int year: year when starts period.
-        :param int month: month when starts period.
+        :param datetime.date | str date: date between 13th days of two months.
         :param Path placeholders_path: Path object where stores grades
          placeholders. Default directory is "images" in project directory.
         :return: None
@@ -42,12 +40,21 @@ class DBDPlanner:
                 f'exists'
             )
             raise ValueError(msg)
+        if isinstance(date, str):
+            date_obj = datetime.date.fromisoformat(date)
+        else:
+            date_obj = date
+        if date_obj.day < DAY_WHEN_PERIOD_CHANGES:
+            date_obj = date_obj.replace(month=date_obj.month - 1)
         self.placeholders_path: Path = placeholders_path
-        self.year: int = year
-        self.month: int = month
+        self.year: int = date_obj.year
+        self.month: int = date_obj.month
         # monthrange returns tuple with 2 numbers: weekday when month starts
         # and count of days in this month. We took only second
-        self.count_days: int = calendar.monthrange(year=year, month=month)[1]
+        self.count_days: int = calendar.monthrange(
+            year=self.year,
+            month=self.month,
+        )[1]
 
     def create_plan_image(self: Self, save_to: Path = PLANS_PATH) -> None:
         """Create plan image.
