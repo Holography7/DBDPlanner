@@ -54,7 +54,7 @@ environment, then activate it:
    Or using `uv` which install dependencies faster:
     ```commandline
     pip install uv
-    uv pip install -r requirments.txt
+    uv pip install -r requirements.txt
     ```
 
 ### Linux
@@ -118,6 +118,18 @@ instruction, except Python 3.12 installation, where you should
 Windows.
 
 ## Usage
+
+**Important**: before usage of this project, you must activate virtual 
+environment any time when you open terminal/console:
+
+```commandline
+.venv\Scripts\activate.bat  # Windows
+source .venv/bin/activate  # Linux and MacOS
+```
+
+After this commands your terminal/console will start with `(.venv)` that means 
+you activate virtual environment. Project works with only activated virtual 
+environment!
 
 Usage is pretty easy - just use next command to generate your plan on current
 month:
