@@ -34,9 +34,9 @@ Next instructions help you to install this standalone tool.
 
 ### Windows
 
-1. Install [Python 3.12](https://www.python.org/downloads/) or higher
-2. Download code of this repository: click "Code" -> "Download ZIP", unpack it
+1. Download code of this repository: click "Code" -> "Download ZIP", unpack it
 anywhere
+2. Install [Python 3.12](https://www.python.org/downloads/) or higher
 3. Open console in project directory and use next commands to create virtual 
 environment, then activate it:
 
@@ -59,6 +59,24 @@ environment, then activate it:
 
 ### Linux
 
+First of all - download code of this repository one of two options:
+   
+1. Using `git clone`:
+   
+   ```commandline
+   sudo apt install git
+   cd /where/you/want/to/install
+   git clone https://github.com/Holography7/DBDPlanner.git
+   ```
+   
+2. Click "Code" -> "Download ZIP", unpack it anywhere.
+
+After this the easiest way is run command `./install_linux.sh`, that creates 
+virtual environment and install all dependencies. Remember that internet 
+connection is required. You can skip next instructions if you run this command.
+
+Manual installing dependencies:
+
 1. Make sure that you have installed Python 3.12 or higher:
 
    ```commandline
@@ -77,19 +95,7 @@ environment, then activate it:
 
    And then you should use command `python3.12` instead just `python`!
 
-2. Download code of this repository one of two options:
-   
-   2.1. Using git clone repo:
-   
-   ```commandline
-   sudo apt install git
-   cd /where/you/want/to/install
-   git clone https://github.com/Holography7/DBDPlanner.git
-   ```
-   
-   2.2. Click "Code" -> "Download ZIP", unpack it anywhere.
-
-3. Open terminal (or just move with `cd`) in directory with project and use 
+2. Open terminal (or just move with `cd`) in directory with project and use 
 next commands to create virtual environment, then activate it:
 
     ```commandline
@@ -97,7 +103,7 @@ next commands to create virtual environment, then activate it:
     source .venv/bin/activate
     ```
 
-4. Install dependencies. You can do it basically via `pip`:
+3. Install dependencies. You can do it basically via `pip`:
 
     ```commandline
     pip install -r requirements.txt
