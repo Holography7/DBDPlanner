@@ -36,8 +36,13 @@ Next instructions help you to install this standalone tool.
 
 1. Download code of this repository: click "Code" -> "Download ZIP", unpack it
 anywhere
-2. Install [Python 3.12](https://www.python.org/downloads/) or higher
-3. Open console in project directory and use next commands to create virtual 
+2. Install [Python 3.12](https://www.python.org/downloads/) or higher. On 
+first step of installation, set checkbox "**Add python.exe to PATH**".
+3. Double-click on `install_windows.bat` file.
+
+Instead of last step, you can install all dependencies manually:
+
+1. Open console in project directory and use next commands to create virtual 
 environment, then activate it:
 
    ```commandline
@@ -45,7 +50,7 @@ environment, then activate it:
     .venv\Scripts\activate.bat
     ```
 
-4. Install dependencies. You can do it basically via `pip`:
+2. Install dependencies. You can do it basically via `pip`:
 
     ```commandline
     pip install -r requirements.txt
@@ -84,8 +89,8 @@ Manual installing dependencies:
    ```
 
    If it's not (or you don't have python), then you should add repository that 
-   contains all versions of Python and install 3.12. For example, for Ubuntu, you 
-   can add deadsnakes repo and install Python 3.12 from it:
+   contains all versions of Python and install 3.12. For example, for Ubuntu, 
+   you can add deadsnakes repo and install Python 3.12 from it:
 
    ```commandline
    sudo add-apt-repository ppa:deadsnakes/ppa
