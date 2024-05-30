@@ -16,7 +16,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install uv==0.2.5
-        uv pip install --extra dev_tools -r pyproject.toml
+        uv pip install --extra dev_tools -r pyproject.toml  --system
     - name: Checking with ruff linter
       run: |
         ruff check $(git ls-files '*.py')
