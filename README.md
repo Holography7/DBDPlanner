@@ -30,22 +30,103 @@ your plans more easily in future!
 
 ## Installing
 
-Next instructions help you to install this standalone tool.
+### Pre-requirements
 
-### Windows
+#### Install Python
 
-1. Install [Python 3.12](https://www.python.org/downloads/) or higher
-2. Download code of this repository: click "Code" -> "Download ZIP", unpack it
-anywhere
-3. Open console in project directory and use next commands to create virtual 
+As this project written on Python, then you need to install it (3.12 or 
+higher):
+- [Windows and MacOS](https://www.python.org/downloads/)
+- Linux, in most cases, already installed, but if it's not:
+
+   ```commandline
+  apt install python
+   ```
+
+Also for Linux, you must ensure that your installed Python have version 3.12 
+or higher:
+
+```commandline
+python --version
+```
+
+If it's not (or you don't have python), then you should add repository that 
+contains all versions of Python and install 3.12. For example, for Ubuntu, you 
+can add deadsnakes repo and install Python 3.12 from it:
+
+```commandline
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12
+```
+
+And then you should use command `python3.12` instead just `python`!
+
+#### Downloading this project
+
+There are 2 possible ways to do it:
+
+1. Click "Code" -> "Download ZIP", unpack it anywhere. If you choose this way, 
+you can go to "Installation" paragraph.
+2. Using `git`.
+
+#### Installing `git`
+
+On Linux and MacOS `git` could be already installed, so before going to 
+instructions, check it out by command in terminal:
+   
+```commandline
+git --version
+```
+   
+If you get `git` version - great! You can skip next instructions and go to 
+"Downloading project with `git`" paragraph.
+   
+On different systems `git` installation is different: 
+[Windows installer](https://git-scm.com/download/win),
+[MacOS instructions](https://git-scm.com/download/mac),
+[Linux instructions](https://git-scm.com/download/linux)
+   
+For Linux and MacOS after installation steps `git` should work.
+   
+For Windows, you must use git bash instead of `cmd.exe`.
+
+#### Downloading project with `git`
+
+Just use these commands:
+   
+```commandline
+cd <path_where_you_want_to_install>
+git clone https://github.com/Holography7/DBDPlanner.git
+```
+
+#### Installation
+
+Project have installation scripts to make easier installation. Just use one of 
+two scripts and just run it:
+- For Windows: `install_windows.bat`. You can just double-click this file.
+- For Linux and MacOS: `install_linux_and_macos.sh`. Probably you need to mark 
+this file as executable to run it. It's recommends to run it from terminal to 
+see logs:
+```commandline
+./install_linux_and_macos.sh
+```
+
+#### Manual installation
+
+If for some reason you cannot or don't want to use script, you can install all 
+dependencies manually:
+
+1. Open console in project directory and use next commands to create virtual 
 environment, then activate it:
 
    ```commandline
-    python -m venv .venv
-    .venv\Scripts\activate.bat
+   python -m venv .venv
+   .venv\Scripts\activate.bat  # Windows
+   source .venv/bin/activate  # Linux and MacOS
     ```
 
-4. Install dependencies. You can do it basically via `pip`:
+2. Install dependencies. You can do it basically via `pip`:
 
     ```commandline
     pip install -r requirements.txt
@@ -56,66 +137,6 @@ environment, then activate it:
     pip install uv
     uv pip install -r requirements.txt
     ```
-
-### Linux
-
-1. Make sure that you have installed Python 3.12 or higher:
-
-   ```commandline
-   python --version
-   ```
-
-   If it's not (or you don't have python), then you should add repository that 
-   contains all versions of Python and install 3.12. For example, for Ubuntu, you 
-   can add deadsnakes repo and install Python 3.12 from it:
-
-   ```commandline
-   sudo add-apt-repository ppa:deadsnakes/ppa
-   sudo apt update
-   sudo apt install python3.12
-   ```
-
-   And then you should use command `python3.12` instead just `python`!
-
-2. Download code of this repository one of two options:
-   
-   2.1. Using git clone repo:
-   
-   ```commandline
-   sudo apt install git
-   cd /where/you/want/to/install
-   git clone https://github.com/Holography7/DBDPlanner.git
-   ```
-   
-   2.2. Click "Code" -> "Download ZIP", unpack it anywhere.
-
-3. Open terminal (or just move with `cd`) in directory with project and use 
-next commands to create virtual environment, then activate it:
-
-    ```commandline
-    python -m venv .venv
-    source .venv/bin/activate
-    ```
-
-4. Install dependencies. You can do it basically via `pip`:
-
-    ```commandline
-    pip install -r requirements.txt
-    ```
-   
-   Or using `uv` which install dependencies faster:
-    ```commandline
-    pip install uv
-    uv pip install -r requirments.txt
-    ```
-
-
-### MacOS
-
-There is no instructions for MacOS yet, but it could be very similar for Linux 
-instruction, except Python 3.12 installation, where you should 
-[download](https://www.python.org/downloads/) installer and install it like in 
-Windows.
 
 ## Usage
 
@@ -190,11 +211,11 @@ Auto tests will come someday...
 
 ## Roadmap
 
-- [ ] Testing on Windows and MacOS
+- [X] Testing on Windows and MacOS
 - [ ] Add settings
 - [ ] Add auto tests
 - [ ] Add updating
-- [ ] Add setup scripts
+- [X] Add setup scripts
 - [ ] Maybe add docker version?
 - [ ] Add customization of mark
 - [ ] GUI
