@@ -4,10 +4,11 @@ filelock==3.14.0
 identify==2.5.36
 mypy==1.10.0
 mypy-extensions==1.0.0
-nodeenv==1.8.0
+nodeenv==1.9.0
 platformdirs==4.2.2
 pre-commit==3.7.1
 pyyaml==6.0.1
-ruff==0.4.5
-typing-extensions==4.11.0
+ruff==0.4.6
+typing-extensions==4.12.0
+uv==0.2.5
 virtualenv==20.26.2
