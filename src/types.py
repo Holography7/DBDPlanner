@@ -8,6 +8,13 @@ class CoordinatesTuple(NamedTuple):
     x: int
     y: int
 
+    def __repr__(self: Self) -> str:
+        """Representation CoordinatesTuple like 10x10.
+
+        :returns: string like 10x10.
+        """
+        return f'{self.x}x{self.y}'
+
 
 class BoxTuple(NamedTuple):
     """NamedTuple that stores any data bound with box sides.
