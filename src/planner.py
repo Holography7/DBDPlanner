@@ -16,7 +16,7 @@ from src.constants import (
 from src.enums import Grade, WeekdayShort
 from src.font_library import FontLibrary
 from src.renderer import PlanRenderer
-from src.types import AxisTuple
+from src.types import CoordinatesTuple
 
 
 class DBDPlanner:
@@ -39,7 +39,7 @@ class DBDPlanner:
                 f'Directory with placeholders ({placeholders_path}) does not '
                 f'exists'
             )
-            raise ValueError(msg)
+            raise FileNotFoundError(msg)
         if isinstance(date, str):
             date_obj = datetime.date.fromisoformat(date)
         else:
@@ -90,7 +90,7 @@ class DBDPlanner:
                 current_date += datetime.timedelta(days=1)
         columns = len(WeekdayShort)
         rows = math.ceil(len(elements) / columns)
-        dimensions = AxisTuple(x=columns, y=rows)
+        dimensions = CoordinatesTuple(x=columns, y=rows)
         headers = tuple(weekday.value for weekday in WeekdayShort)
         font = FontLibrary()[FONT]
         renderer = PlanRenderer(dimensions=dimensions)

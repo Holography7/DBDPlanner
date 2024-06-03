@@ -1,0 +1,16 @@
+[paths]
+fonts = "fonts"
+placeholders = "images"
+plans = "plans"
+
+[customization]
+font = "OpenSans-Regular"
+font_size = 108
+text_color = "white"
+# next settings means count of pixels from left, right, top and bottom
+plan_margins = [50, 0]  # margins of whole plan from borders of image
+cell_margins = [0, 0]
+cell_paddings = [0, 0]  # paddings for each cell
+# next settings mean width and height
+cell_size = [360, 360]
+

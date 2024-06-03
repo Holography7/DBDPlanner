@@ -15,7 +15,7 @@ from src.constants import (
 from src.font_library import FontLibrary
 from src.planner import DBDPlanner
 from src.renderer import PlanRenderer
-from src.types import AxisTuple
+from src.types import CoordinatesTuple
 
 TEST_RESULTS_PATH = Path('src/tests/manual_test_results')
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -83,9 +83,9 @@ def create_background_image(
     """
     click.echo('Initializing PlanRenderer...')
     renderer = PlanRenderer(
-        dimensions=AxisTuple(x=columns, y=rows),
-        cell_size=AxisTuple(x=cell_size[0], y=cell_size[1]),
-        margins=AxisTuple(x=margins[0], y=margins[1]),
+        dimensions=CoordinatesTuple(x=columns, y=rows),
+        cell_size=CoordinatesTuple(x=cell_size[0], y=cell_size[1]),
+        margins=CoordinatesTuple(x=margins[0], y=margins[1]),
         background_color=color,
     )
     path = TEST_RESULTS_PATH / 'background.png'
@@ -110,7 +110,7 @@ def draw_header(columns: int) -> None:
     headers = tuple(str(i) for i in range(columns))
     font = FontLibrary()[FONT]
     click.echo('Preparing background...')
-    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=0))
+    renderer = PlanRenderer(dimensions=CoordinatesTuple(x=columns, y=0))
     click.echo('Running method "draw_header"...')
     renderer.draw_header(headers=headers, font=font)
     path = TEST_RESULTS_PATH / 'header.png'
@@ -167,7 +167,7 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
         placeholder_path = PLACEHOLDERS_PATH / placeholder
         if not placeholder_path.exists():
             msg = f'Placeholder "{placeholder_path}" does not exists.'
-            raise ValueError(msg)
+            raise FileNotFoundError(msg)
         placeholder_paths = (placeholder_path,)
     click.echo('Preparing data...')
     elements = tuple(str(i) for i in range(columns * rows))
@@ -180,7 +180,7 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
     )
     font = FontLibrary()[FONT]
     click.echo('Preparing background...')
-    renderer = PlanRenderer(dimensions=AxisTuple(x=columns, y=rows))
+    renderer = PlanRenderer(dimensions=CoordinatesTuple(x=columns, y=rows))
     click.echo('Running method "draw_plan"...')
     renderer.draw_plan(elements=elements, placeholders=placeholders, font=font)
     path = TEST_RESULTS_PATH / 'plan.png'

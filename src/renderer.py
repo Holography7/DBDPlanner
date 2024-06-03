@@ -15,7 +15,7 @@ from src.constants import (
     TEXT_ANCHOR,
     TEXT_COLOR,
 )
-from src.types import AxisTuple
+from src.types import CoordinatesTuple
 
 
 class PlanRenderer:
@@ -25,16 +25,16 @@ class PlanRenderer:
     # justified. But don't add any others arguments!
     def __init__(  # noqa: PLR0913
         self: Self,
-        dimensions: AxisTuple,
-        cell_size: AxisTuple = CELL_SIZE,
-        margins: AxisTuple = MARGINS,
-        paddings: AxisTuple = PADDINGS,
+        dimensions: CoordinatesTuple,
+        cell_size: CoordinatesTuple = CELL_SIZE,
+        margins: CoordinatesTuple = MARGINS,
+        paddings: CoordinatesTuple = PADDINGS,
         background_color: str = BACKGROUND_COLOR,
     ) -> None:
         """Initialize background image to render plan on it.
 
-        :param AxisTuple dimensions: count of columns (x) and rows (y) without
-         header.
+        :param CoordinatesTuple dimensions: count of columns (x) and rows (y)
+         without header.
         :param AxisSize cell_size: width and height of cells. Default:
          (300, 300).
         :param AxisSize margins: two numbers of margins between borders
@@ -52,11 +52,11 @@ class PlanRenderer:
                 f'>= {(max_x_padding, max_y_padding)}'
             )
             raise ValueError(msg)
-        self.dimensions: AxisTuple = dimensions
-        self.cell_size: AxisTuple = cell_size
-        self.margins: AxisTuple = margins
-        self.paddings: AxisTuple = paddings
-        self.placeholder_size: AxisTuple = AxisTuple(
+        self.dimensions: CoordinatesTuple = dimensions
+        self.cell_size: CoordinatesTuple = cell_size
+        self.margins: CoordinatesTuple = margins
+        self.paddings: CoordinatesTuple = paddings
+        self.placeholder_size: CoordinatesTuple = CoordinatesTuple(
             x=cell_size.x - paddings.x * 2,
             y=cell_size.y - paddings.y * 2,
         )
@@ -86,7 +86,7 @@ class PlanRenderer:
         y_cell = self.margins.y
         for column, text in enumerate(headers):
             x_cell = self.margins.x + self.cell_size.x * column
-            cell_left_top = AxisTuple(x=x_cell, y=y_cell)
+            cell_left_top = CoordinatesTuple(x=x_cell, y=y_cell)
             self.draw_text_in_box(
                 text=text,
                 font=font,
@@ -128,7 +128,7 @@ class PlanRenderer:
             #  add insufficient pixels to place placeholder to center of cell
             x_insufficient = self.cell_size.x - placeholder_resized.size[0]
             y_insufficient = self.cell_size.y - placeholder_resized.size[1]
-            paste_to = AxisTuple(
+            paste_to = CoordinatesTuple(
                 x=x_cell + self.paddings.x + x_insufficient // 2,
                 y=y_cell + self.paddings.y + y_insufficient // 2,
             )
@@ -141,22 +141,22 @@ class PlanRenderer:
                 text=elements[element_num],
                 font=font,
                 left_top=paste_to,
-                box_size=AxisTuple(*placeholder_resized.size),
+                box_size=CoordinatesTuple(*placeholder_resized.size),
             )
 
     def draw_text_in_box(
         self: Self,
         text: str,
         font: FreeTypeFont,
-        left_top: AxisTuple,
-        box_size: AxisTuple,
+        left_top: CoordinatesTuple,
+        box_size: CoordinatesTuple,
     ) -> None:
         """Drawing text in center of box.
 
         :param str text: text that needs to draw.
         :param FreeTypeFont font: text font.
-        :param AxisTuple left_top: left and top coordinate of box.
-        :param AxisTuple box_size: size of box.
+        :param CoordinatesTuple left_top: left and top coordinate of box.
+        :param CoordinatesTuple box_size: size of box.
         :return: None
         """
         textbox_x, textbox_y = self.get_textbox_size(text=text, font=font)
