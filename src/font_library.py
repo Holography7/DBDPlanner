@@ -28,17 +28,17 @@ class FontLibrary(metaclass=Singleton):
         """
         fonts_params: tuple[FontParams, ...] = (
             {
-                'font': settings.paths.header_font.stem,
+                'font': settings.paths.header_font,
                 'size': settings.customization.header_font_size,
             },
             {
-                'font': settings.paths.body_font.stem,
+                'font': settings.paths.body_font,
                 'size': settings.customization.body_font_size,
             },
         )
         self.__fonts: Mapping[str, FreeTypeFont] = MappingProxyType(
             {
-                font_params['font']: ImageFont.truetype(**font_params)
+                font_params['font'].stem: ImageFont.truetype(**font_params)
                 for font_params in fonts_params
             },
         )

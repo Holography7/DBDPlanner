@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import NamedTuple, Self, TypedDict
 
 
@@ -73,5 +74,5 @@ class PydanticError(TypedDict):
 class FontParams(TypedDict):
     """TypedDict of params for loading fonts."""
 
-    font: str
+    font: Path
     size: int
