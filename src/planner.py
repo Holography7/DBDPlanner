@@ -2,21 +2,17 @@ import calendar
 import datetime
 import logging
 import math
-from pathlib import Path
 from typing import Self
 
 from PIL import Image
 
-from src.constants import (
-    DAY_WHEN_PERIOD_CHANGES,
-    FONT,
-    PLACEHOLDERS_PATH,
-    PLANS_PATH,
-)
+from src.constants import DAY_WHEN_PERIOD_CHANGES
 from src.enums import Grade, WeekdayShort
 from src.font_library import FontLibrary
 from src.renderer import PlanRenderer
-from src.types import CoordinatesTuple
+from src.schemas import Settings
+from src.settings import SETTINGS
+from src.types import TableDimensions
 
 
 class DBDPlanner:
@@ -25,28 +21,21 @@ class DBDPlanner:
     def __init__(
         self: Self,
         date: datetime.date | str,
-        placeholders_path: Path = PLACEHOLDERS_PATH,
+        settings: Settings = SETTINGS,
     ) -> None:
         """Initialize planner object.
 
         :param datetime.date | str date: date between 13th days of two months.
-        :param Path placeholders_path: Path object where stores grades
-         placeholders. Default directory is "images" in project directory.
+        :param Settings settings: pydantic model with settings.
         :return: None
         """
-        if not placeholders_path.exists():
-            msg = (
-                f'Directory with placeholders ({placeholders_path}) does not '
-                f'exists'
-            )
-            raise FileNotFoundError(msg)
         if isinstance(date, str):
             date_obj = datetime.date.fromisoformat(date)
         else:
             date_obj = date
         if date_obj.day < DAY_WHEN_PERIOD_CHANGES:
             date_obj = date_obj.replace(month=date_obj.month - 1)
-        self.placeholders_path: Path = placeholders_path
+        self.settings: Settings = settings
         self.year: int = date_obj.year
         self.month: int = date_obj.month
         # monthrange returns tuple with 2 numbers: weekday when month starts
@@ -56,14 +45,14 @@ class DBDPlanner:
             month=self.month,
         )[1]
 
-    def create_plan_image(self: Self, save_to: Path = PLANS_PATH) -> None:
+    def create_plan_image(self: Self) -> None:
         """Create plan image.
 
         :return: Image
         """
         placeholders_sources: dict[Grade, Image.Image] = {
             grade: Image.open(
-                self.placeholders_path / f'{grade.name.lower()}.png',
+                self.settings.paths.placeholders / f'{grade.name.lower()}.png',
             )
             for grade in Grade
         }
@@ -90,19 +79,20 @@ class DBDPlanner:
                 current_date += datetime.timedelta(days=1)
         columns = len(WeekdayShort)
         rows = math.ceil(len(elements) / columns)
-        dimensions = CoordinatesTuple(x=columns, y=rows)
+        dimensions = TableDimensions(rows=rows, columns=columns)
         headers = tuple(weekday.value for weekday in WeekdayShort)
-        font = FontLibrary()[FONT]
+        header_font = FontLibrary()[self.settings.paths.header_font.stem]
+        body_font = FontLibrary()[self.settings.paths.body_font.stem]
         renderer = PlanRenderer(dimensions=dimensions)
-        renderer.draw_header(headers=headers, font=font)
+        renderer.draw_header(headers=headers, font=header_font)
         renderer.draw_plan(
             elements=elements,
             placeholders=placeholders,
-            font=font,
+            font=body_font,
         )
         months_str = f'{current_month_name}-{next_month_name}'
         plan_filename = f'DBD plan {months_str} {self.year}.png'
-        renderer.save_image(save_to / plan_filename)
+        renderer.save_image(path=self.settings.paths.plans / plan_filename)
         logging.info('Generated plan on %s of %s.', months_str, self.year)
 
     @staticmethod

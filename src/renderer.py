@@ -6,69 +6,46 @@ from PIL import Image, ImageDraw, ImageOps
 from PIL.Image import Resampling
 from PIL.ImageFont import FreeTypeFont
 
-from src.constants import (
-    BACKGROUND_COLOR,
-    CELL_SIZE,
-    MARGINS,
-    PADDINGS,
-    PILLOW_MODE,
-    TEXT_ANCHOR,
-    TEXT_COLOR,
-)
-from src.types import CoordinatesTuple
+from src.constants import PILLOW_MODE, TEXT_ANCHOR
+from src.schemas import CustomizationSettings
+from src.settings import SETTINGS
+from src.types import CoordinatesTuple, Dimensions, TableDimensions
 
 
 class PlanRenderer:
     """Class that provides to draw image."""
 
-    # actually, there is 5 arguments, exclude self, so ignoring PLR0913 is
-    # justified. But don't add any others arguments!
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self: Self,
-        dimensions: CoordinatesTuple,
-        cell_size: CoordinatesTuple = CELL_SIZE,
-        margins: CoordinatesTuple = MARGINS,
-        paddings: CoordinatesTuple = PADDINGS,
-        background_color: str = BACKGROUND_COLOR,
+        dimensions: TableDimensions,
+        settings: CustomizationSettings = SETTINGS.customization,
     ) -> None:
         """Initialize background image to render plan on it.
 
-        :param CoordinatesTuple dimensions: count of columns (x) and rows (y)
+        :param TableDimensions dimensions: count of columns (x) and rows (y)
          without header.
-        :param AxisSize cell_size: width and height of cells. Default:
-         (300, 300).
-        :param AxisSize margins: two numbers of margins between borders
-         of image and plan. First number set margins from left and right,
-         second from top and bottom. Default: (50, 0).
-        :param str background_color: background color name like in HTML.
-         Default: "black".
+        :param Settings settings: pydantic model with settings.
         :returns: None
         """
-        max_x_padding = cell_size.x // 2
-        max_y_padding = cell_size.y // 2
-        if paddings.x >= max_x_padding or paddings.y >= max_y_padding:
-            msg = (
-                f'Paddings must be smaller than half of cell, but {paddings} '
-                f'>= {(max_x_padding, max_y_padding)}'
-            )
-            raise ValueError(msg)
-        self.dimensions: CoordinatesTuple = dimensions
-        self.cell_size: CoordinatesTuple = cell_size
-        self.margins: CoordinatesTuple = margins
-        self.paddings: CoordinatesTuple = paddings
-        self.placeholder_size: CoordinatesTuple = CoordinatesTuple(
-            x=cell_size.x - paddings.x * 2,
-            y=cell_size.y - paddings.y * 2,
+        self.settings = settings
+        self.dimensions = dimensions
+        self.placeholder_size: Dimensions = Dimensions(
+            width=settings.cell_size.width - settings.cell_paddings.x,
+            height=settings.cell_size.height - settings.cell_paddings.y,
         )
-        image_width = cell_size.x * dimensions.x + margins.x * 2
+        plan_margins = settings.plan_margins
+        columns = dimensions.columns
         # plan must contain at least 1 row for header
-        rows_with_header = dimensions.y + 1
-        image_height = cell_size.y * rows_with_header + margins.y * 2
-        image_size = (image_width, image_height)
+        rows = dimensions.rows + 1
+        image_size = Dimensions(
+            width=settings.cell_size.width * columns + plan_margins.x,
+            height=settings.cell_size.height * rows + plan_margins.y,
+        )
         self.image: Image.Image = Image.new(
             mode=PILLOW_MODE,
+            # PyCharm bad works with NamedTuple
             size=image_size,
-            color=background_color,
+            color=settings.background_color,
         )
         self.draw: ImageDraw.ImageDraw = ImageDraw.Draw(self.image)
 
@@ -79,19 +56,28 @@ class PlanRenderer:
     ) -> None:
         """Draw header like in month calendar: Mon, Tue, Wed etc.
 
-        :param Sequence[str] headers: sequence of text to draw in header.
+        :param Sequence[str] headers: sequence of text to draw in header. Count
+         must be same as count columns that you specified in initialization.
         :param FreeTypeFont font: font of headers.
         :returns: None
         """
-        y_cell = self.margins.y
+        if len(headers) != self.dimensions.columns:
+            msg = (
+                f'Count headers must be {self.dimensions.columns}, but got '
+                f'{len(headers)}'
+            )
+            raise ValueError(msg)
+        plan_margins = self.settings.plan_margins
+        cell_size = self.settings.cell_size
+        y_cell = self.settings.plan_margins.top
         for column, text in enumerate(headers):
-            x_cell = self.margins.x + self.cell_size.x * column
+            x_cell = plan_margins.left + cell_size.width * column
             cell_left_top = CoordinatesTuple(x=x_cell, y=y_cell)
             self.draw_text_in_box(
                 text=text,
                 font=font,
                 left_top=cell_left_top,
-                box_size=self.cell_size,
+                box_size=cell_size,
             )
 
     def draw_plan(
@@ -112,25 +98,28 @@ class PlanRenderer:
         if len(elements) != len(placeholders):
             msg = 'Sequences of elements and placeholders must have same size.'
             raise ValueError(msg)
+        plan_margins = self.settings.plan_margins
+        cell_size = self.settings.cell_size
+        cell_paddings = self.settings.cell_paddings
         for element_num, placeholder in enumerate(placeholders):
-            column = element_num % self.dimensions.x
-            row = element_num // self.dimensions.x
+            column = element_num % self.dimensions.columns
+            # first row is header always
+            row = (element_num // self.dimensions.columns) + 1
             placeholder_resized = ImageOps.contain(
                 image=placeholder,
                 # PyCharm bad works with NamedTuple
                 size=self.placeholder_size,
                 method=Resampling.LANCZOS,
             )
-            x_cell = self.margins.x + column * self.cell_size.x
-            # first row is header always
-            y_cell = self.margins.y + (row + 1) * self.cell_size.y
+            x_cell = plan_margins.left + column * cell_size.width
+            y_cell = plan_margins.top + row * cell_size.height
             # size of placeholder may not exactly equal cell size, so needs to
             #  add insufficient pixels to place placeholder to center of cell
-            x_insufficient = self.cell_size.x - placeholder_resized.size[0]
-            y_insufficient = self.cell_size.y - placeholder_resized.size[1]
+            x_insufficient = cell_size.width - placeholder_resized.size[0]
+            y_insufficient = cell_size.height - placeholder_resized.size[1]
             paste_to = CoordinatesTuple(
-                x=x_cell + self.paddings.x + x_insufficient // 2,
-                y=y_cell + self.paddings.y + y_insufficient // 2,
+                x=x_cell + cell_paddings.left + x_insufficient // 2,
+                y=y_cell + cell_paddings.top + y_insufficient // 2,
             )
             self.image.paste(
                 im=placeholder_resized,
@@ -141,7 +130,7 @@ class PlanRenderer:
                 text=elements[element_num],
                 font=font,
                 left_top=paste_to,
-                box_size=CoordinatesTuple(*placeholder_resized.size),
+                box_size=Dimensions(*placeholder_resized.size),
             )
 
     def draw_text_in_box(
@@ -149,24 +138,25 @@ class PlanRenderer:
         text: str,
         font: FreeTypeFont,
         left_top: CoordinatesTuple,
-        box_size: CoordinatesTuple,
+        box_size: Dimensions,
     ) -> None:
         """Drawing text in center of box.
 
         :param str text: text that needs to draw.
         :param FreeTypeFont font: text font.
         :param CoordinatesTuple left_top: left and top coordinate of box.
-        :param CoordinatesTuple box_size: size of box.
+        :param Dimensions box_size: size of box.
         :return: None
         """
-        textbox_x, textbox_y = self.get_textbox_size(text=text, font=font)
-        x_pos = left_top.x + (box_size.x - textbox_x) // 2
-        y_pos = left_top.y + (box_size.y - textbox_y) // 2
+        textbox_dimensions = self.get_textbox_size(text=text, font=font)
+        x_pos = left_top.x + (box_size.width - textbox_dimensions.width) // 2
+        y_pos = left_top.y + (box_size.height - textbox_dimensions.height) // 2
+        xy = CoordinatesTuple(x=x_pos, y=y_pos)
         self.draw.text(
-            xy=(x_pos, y_pos),
+            xy=xy,
             text=text,
             font=font,
-            fill=TEXT_COLOR,
+            fill=self.settings.text_color,
             anchor=TEXT_ANCHOR,
         )
 
@@ -174,21 +164,21 @@ class PlanRenderer:
         self: Self,
         text: str,
         font: FreeTypeFont,
-    ) -> tuple[int, int]:
+    ) -> Dimensions:
         """Get width and height of textbox.
 
         :param str text: text to get the size from.
         :param FreeTypeFont font: font of text.
-        :return: 2 integer numbers - width and height of textbox.
+        :return: Dimensions object of textbox.
         """
-        upper_left_coordinate = (0, 0)
+        upper_left_coordinate = CoordinatesTuple(x=0, y=0)
         left, up, width, height = self.draw.textbbox(
             xy=upper_left_coordinate,
             text=text,
             font=font,
             anchor=TEXT_ANCHOR,
         )
-        return width, height
+        return Dimensions(width=width, height=height)
 
     def save_image(self: Self, path: Path) -> None:
         """Save plan image.
