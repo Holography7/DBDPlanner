@@ -39,7 +39,7 @@ class BoxTuple(NamedTuple):
         return self.top + self.bottom
 
 
-class Dimensions(NamedTuple):
+class Size(NamedTuple):
     """NamedTuple that stores width and height."""
 
     width: int
@@ -54,21 +54,11 @@ class RGBColor(NamedTuple):
     blue: int
 
 
-class TableDimensions(NamedTuple):
+class Dimensions(NamedTuple):
     """NamedTuple that stores rows and columns."""
 
     rows: int
     columns: int
-
-
-class PydanticError(TypedDict):
-    """TypedDict of pydantic error from ValidationError."""
-
-    type: str
-    loc: tuple
-    msg: str
-    input: dict[str, str]
-    url: str
 
 
 class FontParams(TypedDict):

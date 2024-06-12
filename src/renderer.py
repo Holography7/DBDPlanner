@@ -9,7 +9,7 @@ from PIL.ImageFont import FreeTypeFont
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
 from src.schemas import CustomizationSettings
 from src.settings import SETTINGS
-from src.types import CoordinatesTuple, Dimensions, TableDimensions
+from src.types import CoordinatesTuple, Dimensions, Size
 
 
 class PlanRenderer:
@@ -17,19 +17,19 @@ class PlanRenderer:
 
     def __init__(
         self: Self,
-        dimensions: TableDimensions,
+        dimensions: Dimensions,
         settings: CustomizationSettings = SETTINGS.customization,
     ) -> None:
         """Initialize background image to render plan on it.
 
-        :param TableDimensions dimensions: count of columns (x) and rows (y)
+        :param Dimensions dimensions: count of columns (x) and rows (y)
          without header.
         :param Settings settings: pydantic model with settings.
         :returns: None
         """
         self.settings = settings
         self.dimensions = dimensions
-        self.placeholder_size: Dimensions = Dimensions(
+        self.placeholder_size: Size = Size(
             width=settings.cell_size.width - settings.cell_paddings.x,
             height=settings.cell_size.height - settings.cell_paddings.y,
         )
@@ -37,7 +37,7 @@ class PlanRenderer:
         columns = dimensions.columns
         # plan must contain at least 1 row for header
         rows = dimensions.rows + 1
-        image_size = Dimensions(
+        image_size = Size(
             width=settings.cell_size.width * columns + plan_margins.x,
             height=settings.cell_size.height * rows + plan_margins.y,
         )
@@ -130,7 +130,7 @@ class PlanRenderer:
                 text=elements[element_num],
                 font=font,
                 left_top=paste_to,
-                box_size=Dimensions(*placeholder_resized.size),
+                box_size=Size(*placeholder_resized.size),
             )
 
     def draw_text_in_box(
@@ -138,14 +138,14 @@ class PlanRenderer:
         text: str,
         font: FreeTypeFont,
         left_top: CoordinatesTuple,
-        box_size: Dimensions,
+        box_size: Size,
     ) -> None:
         """Drawing text in center of box.
 
         :param str text: text that needs to draw.
         :param FreeTypeFont font: text font.
         :param CoordinatesTuple left_top: left and top coordinate of box.
-        :param Dimensions box_size: size of box.
+        :param Size box_size: size of box.
         :return: None
         """
         textbox_dimensions = self.get_textbox_size(text=text, font=font)
@@ -164,12 +164,12 @@ class PlanRenderer:
         self: Self,
         text: str,
         font: FreeTypeFont,
-    ) -> Dimensions:
+    ) -> Size:
         """Get width and height of textbox.
 
         :param str text: text to get the size from.
         :param FreeTypeFont font: font of text.
-        :return: Dimensions object of textbox.
+        :return: Size object of textbox.
         """
         upper_left_coordinate = CoordinatesTuple(x=0, y=0)
         left, up, width, height = self.draw.textbbox(
@@ -178,7 +178,7 @@ class PlanRenderer:
             font=font,
             anchor=TEXT_ANCHOR,
         )
-        return Dimensions(width=width, height=height)
+        return Size(width=width, height=height)
 
     def save_image(self: Self, path: Path) -> None:
         """Save plan image.

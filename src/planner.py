@@ -12,7 +12,7 @@ from src.font_library import FontLibrary
 from src.renderer import PlanRenderer
 from src.schemas import Settings
 from src.settings import SETTINGS
-from src.types import TableDimensions
+from src.types import Dimensions
 
 
 class DBDPlanner:
@@ -79,7 +79,7 @@ class DBDPlanner:
                 current_date += datetime.timedelta(days=1)
         columns = len(WeekdayShort)
         rows = math.ceil(len(elements) / columns)
-        dimensions = TableDimensions(rows=rows, columns=columns)
+        dimensions = Dimensions(rows=rows, columns=columns)
         headers = tuple(weekday.value for weekday in WeekdayShort)
         header_font = FontLibrary()[self.settings.paths.header_font.stem]
         body_font = FontLibrary()[self.settings.paths.body_font.stem]

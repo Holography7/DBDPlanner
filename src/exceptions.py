@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Self
 
-from src.types import PydanticError
+from pydantic_core import ErrorDetails
 
 
 class SettingsParsingError(Exception):
@@ -10,7 +10,7 @@ class SettingsParsingError(Exception):
     def __init__(
         self: Self,
         *args: str,
-        pydantic_errors: Sequence[PydanticError],
+        pydantic_errors: Sequence[ErrorDetails],
     ) -> None:
         """Convert pydantic errors to custom.
 
@@ -21,7 +21,8 @@ class SettingsParsingError(Exception):
         """
         self.errors: list[str] = [*args]
         for pydantic_error in pydantic_errors:
-            msg = f'{'.'.join(pydantic_error['loc'])}: {pydantic_error['msg']}'
+            loc = '.'.join(map(str, pydantic_error['loc']))
+            msg = f'{loc}: {pydantic_error['msg']}'
             self.errors.append(msg)
 
     def __str__(self: Self) -> str:

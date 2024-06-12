@@ -11,7 +11,7 @@ from pydantic import (
 )
 from pydantic_core.core_schema import ValidationInfo
 
-from src.types import BoxTuple, Dimensions, RGBColor
+from src.types import BoxTuple, RGBColor, Size
 
 
 class PathSettings(BaseModel):
@@ -32,7 +32,7 @@ class CustomizationSettings(BaseModel):
     background_color: RGBColor | str
     plan_margins: BoxTuple
     cell_paddings: BoxTuple
-    cell_size: Dimensions
+    cell_size: Size
 
     # False-positive PLR0913 (7 arguments founded, but 3 arguments actually)
     @field_validator('plan_margins', 'cell_paddings', mode='before')
