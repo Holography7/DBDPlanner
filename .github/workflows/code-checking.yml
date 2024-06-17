@@ -26,6 +26,10 @@ jobs:
     - name: Checking with mypy type checker
       run: |
         mypy $(git ls-files '*.py')
+    - name: Checking updates of packages
+      run: |
+        ./.github/workflows/check_updates.sh
+      continue-on-error: true
   install_windows:
     runs-on: windows-latest
     strategy:

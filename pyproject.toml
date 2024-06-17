@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.2.5"]
+installer = ["uv==0.2.11"]
 tests = []
 dev_tools = [
     "cfgv==3.4.0",
