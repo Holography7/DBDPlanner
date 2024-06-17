@@ -25,9 +25,6 @@ Whole plan starts and ends between 13th days of two close months (like in Dead
 By Daylight). Usually first period (ash) always contain 4 days, except every
 February-March that contains 3 days.
 
-Base logic of this tool creates for future customization, so you can customize
-your plans more easily in future!
-
 ## Installing
 
 ### Pre-requirements
@@ -174,6 +171,34 @@ Remember that type day before 13th day of any month, you get plan that starts
 in previous month. For example, date `2024-05-12` will creates plan on 
 April-May 2024, not May-June!
 
+## Settings
+
+You can customize plan using `settings.toml` file. It contains next settings:
+
+| Setting           | Description                                                            | Type                                  | Example value                                     |
+|-------------------|------------------------------------------------------------------------|---------------------------------------|---------------------------------------------------|
+| header_font       | Path to font file for header of plan. Supports only TTF.               | String                                | "fonts/OpenSans-Regular.ttf"                      |
+| body_font         | Path to font file for numbers of days in plan. Supports only TTF.      | String                                | "/usr/share/fonts/truetype/freefont/FreeMono.ttf" |
+| placeholders      | Path to directory where stores images of grades.                       | String                                | "images"                                          |
+| plans             | Path to directory where save plans images.                             | String                                | "C:\plans"                                        |
+| header_font_size  | Size of font in header of plan.                                        | Integer                               | 108                                               |
+| body_font_size    | Size of font for numbers of days in plan.                              | Integer                               | 108                                               |
+| header_text_color | Text color of header.                                                  | String or list with 3 integers        | "white"                                           |
+| body_text_color   | Text color of numbers of days.                                         | String or list with 3 integers        | \[255, 255, 255\]                                 |
+| background_color  | Background color.                                                      | String or list with 3 integers        | "black"                                           |
+| plan_margins      | Size of margins from border of image to imaginary border of plan.      | Integer, list with 2, 3 or 4 integers | 50                                                |
+| cell_paddings     | Size of paddings from border of cell to placeholder image inside cell. | Integer, list with 2, 3 or 4 integers | \[0, 0\]                                          |
+| cell_size         | Size of cell in pixels                                                 | List with 2 integers                  | \[360, 360\]                                      |
+
+Little meanings for some types:
+- Any color setting could be set as list with 3 numbers of RGB colors from 0 to
+255, or as string - color name like in HTML.
+- Margins and paddings have similar definition in HTML: single number defines 
+margins or paddings from all sides, list with 2 integers - top + bottom and 
+left + right sides, 3 - top, left + right and bottom sides, 4 - top, right, 
+bottom and left sides
+- `cell_size` defines width and height
+
 ## Developing
 
 This project contains requirements for developing (usual users not need them 
@@ -212,7 +237,7 @@ Auto tests will come someday...
 ## Roadmap
 
 - [X] Testing on Windows and MacOS
-- [ ] Add settings
+- [X] Add settings
 - [ ] Add auto tests
 - [ ] Add updating
 - [X] Add setup scripts
