@@ -9,7 +9,7 @@ from PIL.ImageFont import FreeTypeFont
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
 from src.schemas import CustomizationSettings
 from src.settings import SETTINGS
-from src.types import CoordinatesTuple, Dimensions, Size
+from src.types import BoxTuple, CoordinatesTuple, Dimensions, RGBColor, Size
 
 
 class PlanRenderer:
@@ -68,16 +68,17 @@ class PlanRenderer:
             )
             raise ValueError(msg)
         plan_margins = self.settings.plan_margins
-        cell_size = self.settings.cell_size
-        y_cell = self.settings.plan_margins.top
         for column, text in enumerate(headers):
-            x_cell = plan_margins.left + cell_size.width * column
-            cell_left_top = CoordinatesTuple(x=x_cell, y=y_cell)
+            top = self.settings.plan_margins.top
+            bottom = top + self.settings.cell_size.height
+            left = plan_margins.left + self.settings.cell_size.width * column
+            right = left + self.settings.cell_size.width
+            box = BoxTuple(top=top, right=right, bottom=bottom, left=left)
             self.draw_text_in_box(
                 text=text,
                 font=font,
-                left_top=cell_left_top,
-                box_size=cell_size,
+                color=self.settings.header_text_color,
+                box=box,
             )
 
     def draw_plan(
@@ -126,37 +127,47 @@ class PlanRenderer:
                 box=paste_to,
                 mask=placeholder_resized,
             )
+            top = paste_to.y
+            bottom = paste_to.y + placeholder_resized.size[1]
+            left = paste_to.x
+            right = paste_to.x + placeholder_resized.size[0]
+            box = BoxTuple(top=top, right=right, bottom=bottom, left=left)
             self.draw_text_in_box(
                 text=elements[element_num],
                 font=font,
-                left_top=paste_to,
-                box_size=Size(*placeholder_resized.size),
+                color=self.settings.body_text_color,
+                box=box,
             )
 
     def draw_text_in_box(
         self: Self,
         text: str,
         font: FreeTypeFont,
-        left_top: CoordinatesTuple,
-        box_size: Size,
+        color: RGBColor | str,
+        box: BoxTuple,
     ) -> None:
         """Drawing text in center of box.
 
         :param str text: text that needs to draw.
         :param FreeTypeFont font: text font.
-        :param CoordinatesTuple left_top: left and top coordinate of box.
-        :param Size box_size: size of box.
+        :param RGBColor | str color: color of text in HTML word or RGB
+         sequence.
+        :param BoxTuple box: coordinates of box.
         :return: None
         """
         textbox_dimensions = self.get_textbox_size(text=text, font=font)
-        x_pos = left_top.x + (box_size.width - textbox_dimensions.width) // 2
-        y_pos = left_top.y + (box_size.height - textbox_dimensions.height) // 2
-        xy = CoordinatesTuple(x=x_pos, y=y_pos)
+        # shift text to draw it at center of box
+        x_shift = (box.right - box.left - textbox_dimensions.width) // 2
+        y_shift = (box.bottom - box.top - textbox_dimensions.height) // 2
+        where_to_draw = CoordinatesTuple(
+            x=box.left + x_shift,
+            y=box.top + y_shift,
+        )
         self.draw.text(
-            xy=xy,
+            xy=where_to_draw,
             text=text,
             font=font,
-            fill=self.settings.text_color,
+            fill=color,
             anchor=TEXT_ANCHOR,
         )
 

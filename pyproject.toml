@@ -41,6 +41,7 @@ show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
+exclude = ".venv"
 
 [tool.ruff]
 line-length = 79

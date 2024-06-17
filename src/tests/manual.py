@@ -110,18 +110,51 @@ def create_background_image(
     help='Count of columns, default 1.',
     type=int,
 )
-def draw_header(columns: int) -> None:
+@click.option(
+    '--html-color',
+    help=(
+        'Text color in HTML style. Default is value, selected in '
+        'settings.toml.'
+    ),
+    type=str,
+)
+@click.option(
+    '--rgb-color',
+    help=(
+        'Text color in 3 RGB numbers. Default is value, selected in '
+        'settings.toml.'
+    ),
+    type=(int, int, int),
+)
+def draw_header(
+    columns: int,
+    html_color: str | None,
+    rgb_color: tuple[int, int, int] | None,
+) -> None:
     """Test drawing of plan header.
 
     :param int columns: count columns
+    :param str | tuple[int, int, int] | None html_color: HTML-style name of
+     text color.
+    :param tuple[int, int, int] | None rgb_color: 3 RGB numbers of text color.
+     Overrides --hrml-color if selected.
     :return: None
     """
+    updated_settings: dict[str, Any] = {}
+    if html_color:
+        updated_settings['header_text_color'] = html_color
+    if rgb_color:
+        updated_settings['header_text_color'] = RGBColor(*rgb_color)
+    overridden_settings = SETTINGS.customization.model_copy(
+        update=updated_settings,
+    )
     click.echo('Preparing data...')
     headers = tuple(str(i) for i in range(columns))
     font = FontLibrary()[SETTINGS.paths.header_font.stem]
     click.echo('Preparing background...')
     renderer = PlanRenderer(
         dimensions=Dimensions(columns=columns, rows=0),
+        settings=overridden_settings,
     )
     click.echo('Running method "draw_header"...')
     renderer.draw_header(headers=headers, font=font)
@@ -153,7 +186,29 @@ def draw_header(columns: int) -> None:
     ),
     type=str,
 )
-def draw_plan(columns: int, rows: int, placeholder: str) -> None:
+@click.option(
+    '--html-color',
+    help=(
+        'Text color in HTML style. Default is value, selected in '
+        'settings.toml.'
+    ),
+    type=str,
+)
+@click.option(
+    '--rgb-color',
+    help=(
+        'Text color in 3 RGB numbers. Default is value, selected in '
+        'settings.toml.'
+    ),
+    type=(int, int, int),
+)
+def draw_plan(
+    columns: int,
+    rows: int,
+    placeholder: str,
+    html_color: str | None,
+    rgb_color: tuple[int, int, int] | None,
+) -> None:
     """Test drawing plan image by PlanRenderer.
 
     This test excluding planner logic, that contains calculation like calendar.
@@ -161,8 +216,20 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
     :param int rows: count rows
     :param str placeholder: filename of placeholder that will fill all cells.
      Alias "all" available to test on all placeholders in "images" directory.
+    :param str | tuple[int, int, int] | None html_color: HTML-style name of
+     text color.
+    :param tuple[int, int, int] | None rgb_color: 3 RGB numbers of text color.
+     Overrides --hrml-color if selected.
     :return: None
     """
+    updated_settings: dict[str, Any] = {}
+    if html_color:
+        updated_settings['body_text_color'] = html_color
+    if rgb_color:
+        updated_settings['body_text_color'] = RGBColor(*rgb_color)
+    overridden_settings = SETTINGS.customization.model_copy(
+        update=updated_settings,
+    )
     if placeholder == 'all':
         placeholders_files = (
             'ash.png',
@@ -194,6 +261,7 @@ def draw_plan(columns: int, rows: int, placeholder: str) -> None:
     click.echo('Preparing background...')
     renderer = PlanRenderer(
         dimensions=Dimensions(columns=columns, rows=rows),
+        settings=overridden_settings,
     )
     click.echo('Running method "draw_plan"...')
     renderer.draw_plan(elements=elements, placeholders=placeholders, font=font)

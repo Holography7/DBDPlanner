@@ -28,7 +28,8 @@ class CustomizationSettings(BaseModel):
 
     header_font_size: PositiveInt
     body_font_size: PositiveInt
-    text_color: RGBColor | str
+    header_text_color: RGBColor | str
+    body_text_color: RGBColor | str
     background_color: RGBColor | str
     plan_margins: BoxTuple
     cell_paddings: BoxTuple
