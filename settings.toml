@@ -1,0 +1,19 @@
+[paths]
+header_font = "fonts/OpenSans-Regular.ttf"
+body_font = "fonts/OpenSans-Regular.ttf"
+placeholders = "images"
+plans = "plans"
+
+[customization]
+header_font_size = 108
+body_font_size = 108
+# next settings using HTML words or list of 3 numbers to set by RGB
+header_text_color = "white"
+body_text_color = "white"
+background_color = "black"
+# next settings means count of pixels from left, right, top and bottom
+plan_margins = [0, 50]  # margins of whole plan from borders of image
+cell_paddings = [0, 0]  # paddings for each cell
+# next settings mean width and height
+cell_size = [360, 360]
+
