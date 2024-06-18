@@ -10,16 +10,17 @@ pillow==10.3.0
     # via dbdplanner (pyproject.toml)
 pip==24.0
     # via dbdplanner (pyproject.toml)
-pydantic==2.7.2
+pydantic==2.7.4
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.18.3
+pydantic-core==2.18.4
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
 setuptools==70.0.0
     # via dbdplanner (pyproject.toml)
-typing-extensions==4.12.1
+typing-extensions==4.12.2
     # via
+    #   dbdplanner (pyproject.toml)
     #   pydantic
     #   pydantic-core
 wheel==0.43.0
