@@ -45,4 +45,3 @@ jobs:
       - name: Checking updates of packages
         run: |
           ./.github/workflows/check_updates.sh
-        continue-on-error: true
