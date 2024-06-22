@@ -8,7 +8,6 @@ from typing import LiteralString
 import click
 
 logging.basicConfig(format='%(message)s', level=logging.INFO)
-logging.info('Current system: %s', platform.system())
 
 
 def run_subprocess_command(command: Sequence[LiteralString]) -> str:

@@ -16,9 +16,7 @@ jobs:
         run: ./install_windows.bat
         shell: cmd
       - name: Run project
-        run: |
-          ./.venv\Scripts\activate.bat
-          python create_plan.py
+        run: .venv\Scripts\activate.bat && python create_plan.py
         shell: cmd
   install_linux:
     runs-on: ubuntu-latest
