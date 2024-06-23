@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.9
+    rev: v0.4.10
     hooks:
       - id: ruff
       - id: ruff-format
@@ -8,3 +8,14 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
+  - repo: local
+    hooks:
+      - id: check-updates
+        name: check updates for dependencies
+        verbose: true
+        language: system
+        stages: [ commit ]
+        entry: python pre-commit.py check-updates
+        require_serial: true
+        always_run: true
+        pass_filenames: false

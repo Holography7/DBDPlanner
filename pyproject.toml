@@ -3,8 +3,8 @@ name = "DBDPlanner"
 version = "2.0"
 requires-python = ">=3.12"
 dependencies = [
-    "pip==24.0",
-    "setuptools==70.0.0",
+    "pip==24.1",
+    "setuptools==70.1.0",
     "wheel==0.43.0",
 
     "annotated-types==0.7.0",
@@ -16,12 +16,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.2.12"]
+installer = ["uv==0.2.13"]
 tests = []
 dev_tools = [
     "cfgv==3.4.0",
     "distlib==0.3.8",
-    "filelock==3.15.1",
+    "filelock==3.15.4",
     "identify==2.5.36",
     "mypy==1.10.0",
     "mypy-extensions==1.0.0",
@@ -29,8 +29,8 @@ dev_tools = [
     "platformdirs==4.2.2",
     "pre-commit==3.7.1",
     "pyyaml==6.0.1",
-    "ruff==0.4.9",
-    "virtualenv==20.26.2",
+    "ruff==0.4.10",
+    "virtualenv==20.26.3",
 ]
 
 [tool.mypy]

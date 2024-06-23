@@ -8,7 +8,7 @@ distlib==0.3.8
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
-filelock==3.15.1
+filelock==3.15.4
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
@@ -36,15 +36,15 @@ pyyaml==6.0.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-ruff==0.4.9
+ruff==0.4.10
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
     #   dbdplanner (pyproject.toml)
     #   mypy
-uv==0.2.12
+uv==0.2.13
     # via dbdplanner (pyproject.toml)
-virtualenv==20.26.2
+virtualenv==20.26.3
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
