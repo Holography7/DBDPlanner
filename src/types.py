@@ -31,17 +31,17 @@ class BoxTuple(NamedTuple):
 
     @property
     def x(self: Self) -> int:
-        """Get sum of paddings from left and right.
+        """Get sum of coordinates from left and right.
 
-        :returns: sum of paddings from left and right.
+        :returns: sum of coordinates from left and right.
         """
         return self.left + self.right
 
     @property
     def y(self: Self) -> int:
-        """Get sum of paddings from top and bottom.
+        """Get sum of coordinates from top and bottom.
 
-        :returns: sum of paddings from top and bottom.
+        :returns: sum of coordinates from top and bottom.
         """
         return self.top + self.bottom
 
