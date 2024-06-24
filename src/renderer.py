@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Self
+from typing import Literal, Self
 
 from PIL import Image, ImageDraw, ImageOps
 from PIL.Image import Resampling
@@ -99,9 +99,6 @@ class PlanRenderer:
         if len(elements) != len(placeholders):
             msg = 'Sequences of elements and placeholders must have same size.'
             raise ValueError(msg)
-        plan_margins = self.settings.plan_margins
-        cell_size = self.settings.cell_size
-        cell_paddings = self.settings.cell_paddings
         for element_num, placeholder in enumerate(placeholders):
             column = element_num % self.dimensions.columns
             # first row is header always
@@ -147,22 +144,8 @@ class PlanRenderer:
         :param Size placeholder_size: placeholder size that need to paste.
         :returns: coordinates where need to paste placeholder.
         """
-        if row < 0:
-            raise ValueError('Row must be positive integer.')
-        if column < 0:
-            raise ValueError('Column must be positive integer.')
-        if row > self.dimensions.rows:
-            msg = (
-                f'Row is out of bounds for this plan: {row} >= '
-                f'{self.dimensions.rows}'
-            )
-            raise ValueError(msg)
-        if column > self.dimensions.columns:
-            msg = (
-                f'Column is out of bounds for this plan: {column} >= '
-                f'{self.dimensions}'
-            )
-            raise ValueError(msg)
+        self.__validate_dimension(value=row, dimension='Row')
+        self.__validate_dimension(value=column, dimension='Column')
         if (
             placeholder_size.width > self.allowable_placeholder_size.width
             or placeholder_size.height > self.allowable_placeholder_size.height
@@ -179,11 +162,36 @@ class PlanRenderer:
         #  add insufficient pixels to place placeholder to center of cell
         x_insufficient = cell_size.width - placeholder_size.width
         y_insufficient = cell_size.height - placeholder_size.height
-        paste_to = CoordinatesTuple(
+        return CoordinatesTuple(
             x=x_cell + self.settings.cell_paddings.left + x_insufficient // 2,
             y=y_cell + self.settings.cell_paddings.top + y_insufficient // 2,
         )
-        return paste_to
+
+    def __validate_dimension(
+        self: Self,
+        value: int,
+        dimension: Literal['Row', 'Column'] = 'Row',
+    ) -> None:
+        """Validate row or column value.
+
+        :param int value: value.
+        :param Literal['Row', 'Column'] dimension: name of dimension, 'Row'
+         default.
+        :return: None
+        """
+        if dimension == 'Row':
+            max_dimension = self.dimensions.rows
+        else:
+            max_dimension = self.dimensions.columns
+        if value < 0:
+            msg = f'{dimension} must be positive integer.'
+            raise ValueError(msg)
+        if value > max_dimension:
+            msg = (
+                f'{dimension} is out of bounds for this plan: {value} >= '
+                f'{max_dimension}'
+            )
+            raise ValueError(msg)
 
     def draw_text_in_box(
         self: Self,

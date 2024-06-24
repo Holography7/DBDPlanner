@@ -9,11 +9,11 @@ class CoordinatesTuple(NamedTuple):
     y: int
 
     def __repr__(self: Self) -> str:
-        """Representation CoordinatesTuple like 10x10.
+        """Representation like Coordinate 10x10.
 
-        :returns: string like 10x10.
+        :returns: string like Coordinate 10x10.
         """
-        return f'{self.x}x{self.y}'
+        return f'Coordinate {self.x}x{self.y}'
 
 
 class BoxTuple(NamedTuple):
@@ -45,12 +45,28 @@ class BoxTuple(NamedTuple):
         """
         return self.top + self.bottom
 
+    def __repr__(self: Self) -> str:
+        """Representation like "Box (top,left)x(right,bottom)".
+
+        For exemple, box with parameters left=10, top=10, right=20 and
+         bottom=20 will represent as (10,10)x(20,20)
+        :returns: string like "Box (top,left)x(right,bottom)".
+        """
+        return f'Box ({self.left},{self.top})x({self.right},{self.bottom})'
+
 
 class Size(NamedTuple):
     """NamedTuple that stores width and height."""
 
     width: int
     height: int
+
+    def __repr__(self: Self) -> str:
+        """Representation like "Size 10x10".
+
+        :returns: string like "Size 10x10".
+        """
+        return f'Size {self.width}x{self.height}'
 
 
 class RGBColor(NamedTuple):

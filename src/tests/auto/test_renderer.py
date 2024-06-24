@@ -3,92 +3,89 @@ from typing import Self
 import pytest
 
 from src.renderer import PlanRenderer
-from src.types import AxisTuple
+from src.types import BoxTuple, CoordinatesTuple, Size
 
 
 class TestPlanRenderer:
     """Test cases for class that rendering plan image."""
 
     CASES_FOR_TEXT_DRAWING = (
+        # Scheme:
+        # 1. Box inside which need draw text
+        # 2. Textbox size
+        # 3. Expected coordinate where need to draw text
         (
-            AxisTuple(x=10, y=10),  # left top coordinate of box
-            AxisTuple(x=10, y=10),  # box size
-            AxisTuple(x=10, y=10),  # textbox size
-            AxisTuple(x=10, y=10),  # expected coordinate where draw text
+            BoxTuple(top=10, right=20, bottom=20, left=10),
+            Size(width=10, height=10),
+            CoordinatesTuple(x=10, y=10),
         ),
         (
-            AxisTuple(x=0, y=0),  # left top coordinate of box
-            AxisTuple(x=10, y=10),  # box size
-            AxisTuple(x=10, y=10),  # textbox size
-            AxisTuple(x=0, y=0),  # expected coordinate where draw text
+            BoxTuple(top=0, right=10, bottom=10, left=0),
+            Size(width=10, height=10),
+            CoordinatesTuple(x=0, y=0),
         ),
         (
-            AxisTuple(x=10, y=10),  # left top coordinate of box
-            AxisTuple(x=90, y=90),  # box size
-            AxisTuple(x=50, y=50),  # textbox size
-            AxisTuple(x=30, y=30),  # expected coordinate where draw text
+            BoxTuple(top=10, right=100, bottom=100, left=10),
+            Size(width=50, height=50),
+            CoordinatesTuple(x=30, y=30),
         ),
         (
-            AxisTuple(x=10, y=5),  # left top coordinate of box
-            AxisTuple(x=90, y=60),  # box size
-            AxisTuple(x=70, y=30),  # textbox size
-            AxisTuple(x=20, y=20),  # expected coordinate where draw text
+            BoxTuple(top=5, right=100, bottom=65, left=10),
+            Size(width=70, height=30),
+            CoordinatesTuple(x=20, y=20),
         ),
     )
-    CASES_FOR_PASTING_PLACEHOLDER = (
+    CASES_FOR_TEXT_DRAWING_FAIL = (
+        # Scheme:
+        # 1. Box inside which need draw text
+        # 2. Textbox size. For that test, it must be larger than box.
         (
-            AxisTuple(x=7, y=5),  # plan dimensions
-            AxisTuple(x=300, y=300),  # cell size
-            2,  # element number
-            AxisTuple(x=10, y=10),  # expected coordinates
+            BoxTuple(top=0, right=10, bottom=10, left=0),
+            Size(width=11, height=11),
+        ),
+        (
+            BoxTuple(top=0, right=10, bottom=10, left=0),
+            Size(width=11, height=10),
+        ),
+        (
+            BoxTuple(top=0, right=10, bottom=10, left=0),
+            Size(width=10, height=11),
         ),
     )
 
     @pytest.mark.parametrize(
-        ('left_top', 'box_size', 'textbox_size', 'expected_coordinate'),
+        ('box', 'textbox_size', 'expected_coordinate'),
         CASES_FOR_TEXT_DRAWING,
         ids=(
-            (
-                f'Box coordinate = {case[0]}, box size = {case[1]}, textbox '
-                f'size = {case[2]}, expected coordinate = {case[3]}'
-            )
+            f'{case[0]}, textbox {case[1]}, expected {case[2]}'
             for case in CASES_FOR_TEXT_DRAWING
         ),
     )
     def test_get_coordinates_where_draw_text(
         self: Self,
-        left_top: AxisTuple,
-        box_size: AxisTuple,
-        textbox_size: AxisTuple,
-        expected_coordinate: AxisTuple,
+        box: BoxTuple,
+        textbox_size: Size,
+        expected_coordinate: CoordinatesTuple,
     ) -> None:
         """Testing getting coordinates for drawing text in box.
 
-        :param AxisTuple left_top: parameter with left-top coordinate of box
-         where need to draw text.
-        :param AxisTuple box_size: parameter with size of box where need to
+        :param BoxTuple box: parameter with box coordinates inside which need
          draw text.
-        :param AxisTuple textbox_size: parameter with size of textbox where
-         need to draw text.
-        :param AxisTuple expected_coordinate: parameter with expected
+        :param Size textbox_size: parameter with size of textbox.
+        :param CoordinatesTuple expected_coordinate: parameter with expected
          coordinates where must draw text.
         :returns: None
         """
         result = PlanRenderer.get_coordinates_where_draw_text(
-            left_top=left_top,
-            box_size=box_size,
+            box=box,
             textbox_size=textbox_size,
         )
 
         assert result == expected_coordinate
 
     @pytest.mark.parametrize(
-        ('box_size', 'textbox_size'),
-        (
-            (AxisTuple(x=10, y=10), AxisTuple(x=11, y=11)),
-            (AxisTuple(x=10, y=10), AxisTuple(x=11, y=10)),
-            (AxisTuple(x=10, y=10), AxisTuple(x=10, y=11)),
-        ),
+        ('box', 'textbox_size'),
+        CASES_FOR_TEXT_DRAWING_FAIL,
         ids=(
             'Textbox larger with both dimensions',
             'Textbox larger with width',
@@ -97,34 +94,19 @@ class TestPlanRenderer:
     )
     def test_get_coordinates_where_draw_text_fail(
         self: Self,
-        box_size: AxisTuple,
-        textbox_size: AxisTuple,
+        box: BoxTuple,
+        textbox_size: Size,
     ) -> None:
         """Testing getting coordinates for drawing text in box: failing cases.
 
-        :param AxisTuple box_size: parameter with size of box where need to
-         draw text.
-        :param AxisTuple textbox_size: parameter with size of textbox where
-         need to draw text. For that test, it must be larger than box_size.
+        :param BoxTuple box: parameter with box coordinates inside which need
+         to draw text.
+        :param Size textbox_size: parameter with size of textbox. For that
+         test, it must be larger than box_size.
         :returns: None
         """
-        left_top = AxisTuple(x=0, y=0)
-
         with pytest.raises(ValueError):
             PlanRenderer.get_coordinates_where_draw_text(
-                left_top=left_top,
-                box_size=box_size,
+                box=box,
                 textbox_size=textbox_size,
             )
-
-    @pytest.mark.parametrize(
-        (
-            'dimensions',
-            'cell_size',
-            'element_num',
-            'expected_coordinate',
-        ),
-        CASES_FOR_PASTING_PLACEHOLDER,
-    )
-    def test_get_coordinate_to_paste_placeholder(self: Self) -> None:
-        """Testing getting coordinate to place placeholder."""
