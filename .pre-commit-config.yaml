@@ -10,20 +10,30 @@ repos:
       - id: mypy
   - repo: local
     hooks:
+      - id: tests
+        name: run tests
+        verbose: true
+        language: system
+        stages: [ commit ]
+        entry: pytest --cov=. --cov-report json --cov-report term
+        require_serial: true
+        always_run: true
+        pass_filenames: false
+      - id: coverage
+        name: check coverage
+        verbose: true
+        language: system
+        stages: [ commit ]
+        entry: python pre-commit.py coverage --expected-coverage 30 coverage.json
+        require_serial: true
+        always_run: true
+        pass_filenames: false
       - id: check-updates
         name: check updates for dependencies
         verbose: true
         language: system
         stages: [ commit ]
         entry: python pre-commit.py check-updates
-        require_serial: true
-        always_run: true
-        pass_filenames: false
-      - id: tests
-        name: run tests
-        language: system
-        stages: [ commit ]
-        entry: pytest
         require_serial: true
         always_run: true
         pass_filenames: false
