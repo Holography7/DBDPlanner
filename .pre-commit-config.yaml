@@ -19,3 +19,11 @@ repos:
         require_serial: true
         always_run: true
         pass_filenames: false
+      - id: tests
+        name: run tests
+        language: system
+        stages: [ commit ]
+        entry: pytest
+        require_serial: true
+        always_run: true
+        pass_filenames: false

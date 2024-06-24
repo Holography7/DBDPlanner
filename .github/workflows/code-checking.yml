@@ -25,3 +25,5 @@ jobs:
       run: mypy $(git ls-files '*.py')
     - name: Checking updates of packages
       run: python pre-commit.py check-updates
+    - name: Run auto tests
+      run: pytest
