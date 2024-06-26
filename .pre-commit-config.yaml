@@ -15,7 +15,7 @@ repos:
         verbose: true
         language: system
         stages: [ commit ]
-        entry: pytest --cov=. --cov-report json --cov-report term-missing
+        entry: pytest --cov-config=pyproject.toml --cov=. --cov-report=json --cov-report=term-missing
         require_serial: true
         always_run: true
         pass_filenames: false

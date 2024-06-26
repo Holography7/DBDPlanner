@@ -26,11 +26,6 @@ jobs:
     - name: Checking updates of packages
       run: python pre-commit.py check-updates
     - name: Run auto tests
-      run: pytest --cov=. --cov-report json --cov-report term-missing --cov-report xml
+      run: pytest --cov-config=pyproject.toml --cov=. --cov-report=json --cov-report=term-missing
     - name: Check coverage
       run: python pre-commit.py coverage --expected-coverage 60 coverage.json
-    - name: Coverage report
-      uses: orgoro/coverage@v3.1
-      with:
-        coverageFile: coverage.xml
-        token: ${{ secrets.GITHUB_TOKEN }}
