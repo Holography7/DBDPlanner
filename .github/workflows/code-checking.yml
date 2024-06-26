@@ -28,7 +28,7 @@ jobs:
     - name: Run auto tests
       run: pytest --cov=. --cov-report json --cov-report term-missing --cov-report xml
     - name: Check coverage
-      run: python pre-commit.py coverage --expected-coverage 30 coverage.json
+      run: python pre-commit.py coverage --expected-coverage 60 coverage.json
     - name: Coverage report
       uses: orgoro/coverage@v3.1
       with:

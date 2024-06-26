@@ -24,7 +24,7 @@ repos:
         verbose: true
         language: system
         stages: [ commit ]
-        entry: python pre-commit.py coverage --expected-coverage 30 coverage.json
+        entry: python pre-commit.py coverage --expected-coverage 60 coverage.json
         require_serial: true
         always_run: true
         pass_filenames: false

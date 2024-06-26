@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import NamedTuple, Self, TypedDict
 
+from pydantic import NonNegativeInt
+
 
 class CoordinatesTuple(NamedTuple):
     """NamedTuple that stores coordinates on axes x and y."""
@@ -24,13 +26,13 @@ class BoxTuple(NamedTuple):
     left, top, right and bottom sides of box.
     """
 
-    top: int
-    right: int
-    bottom: int
-    left: int
+    top: NonNegativeInt
+    right: NonNegativeInt
+    bottom: NonNegativeInt
+    left: NonNegativeInt
 
     @property
-    def x(self: Self) -> int:
+    def x(self: Self) -> NonNegativeInt:
         """Get sum of coordinates from left and right.
 
         :returns: sum of coordinates from left and right.
@@ -38,7 +40,7 @@ class BoxTuple(NamedTuple):
         return self.left + self.right
 
     @property
-    def y(self: Self) -> int:
+    def y(self: Self) -> NonNegativeInt:
         """Get sum of coordinates from top and bottom.
 
         :returns: sum of coordinates from top and bottom.
@@ -58,8 +60,8 @@ class BoxTuple(NamedTuple):
 class Size(NamedTuple):
     """NamedTuple that stores width and height."""
 
-    width: int
-    height: int
+    width: NonNegativeInt
+    height: NonNegativeInt
 
     def __repr__(self: Self) -> str:
         """Representation like "Size 10x10".
@@ -72,20 +74,20 @@ class Size(NamedTuple):
 class RGBColor(NamedTuple):
     """NamedTuple that stores values of RGB colors."""
 
-    red: int
-    green: int
-    blue: int
+    red: NonNegativeInt
+    green: NonNegativeInt
+    blue: NonNegativeInt
 
 
 class Dimensions(NamedTuple):
     """NamedTuple that stores rows and columns."""
 
-    rows: int
-    columns: int
+    rows: NonNegativeInt
+    columns: NonNegativeInt
 
 
 class FontParams(TypedDict):
     """TypedDict of params for loading fonts."""
 
     font: Path
-    size: int
+    size: NonNegativeInt
