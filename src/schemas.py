@@ -11,6 +11,7 @@ from pydantic import (
 )
 from pydantic_core.core_schema import ValidationInfo
 
+from src.enums import StrColor
 from src.types import BoxTuple, RGBColor, Size
 
 
@@ -28,14 +29,13 @@ class CustomizationSettings(BaseModel):
 
     header_font_size: PositiveInt
     body_font_size: PositiveInt
-    header_text_color: RGBColor | str
-    body_text_color: RGBColor | str
-    background_color: RGBColor | str
+    header_text_color: RGBColor | StrColor
+    body_text_color: RGBColor | StrColor
+    background_color: RGBColor | StrColor
     plan_margins: BoxTuple
     cell_paddings: BoxTuple
     cell_size: Size
 
-    # False-positive PLR0913 (7 arguments founded, but 3 arguments actually)
     @field_validator('plan_margins', 'cell_paddings', mode='before')
     @classmethod
     def transform_to_box_tuple(
@@ -50,20 +50,13 @@ class CustomizationSettings(BaseModel):
         :param ValidationInfo info: pydantic validation info.
         :returns: BoxTuple.
         """
+        type_of_raw = type(raw)
+        if type_of_raw not in {int, list, tuple}:
+            msg = 'Must be positive integer or list with 1-4 elements'
+            raise ValueError(msg)
         if isinstance(raw, int):
-            transformed = BoxTuple(top=raw, right=raw, bottom=raw, left=raw)
-        elif isinstance(raw, Sequence):
-            transformed = cls.__transform_tuple_to_box_tuple(
-                raw=raw,
-                info=info,
-            )
-        else:
-            msg = (
-                f'{info.field_name} must be positive integer or list with '
-                f'1-4 elements'
-            )
-            raise TypeError(msg)
-        return transformed
+            return BoxTuple(top=raw, right=raw, bottom=raw, left=raw)
+        return cls.__transform_tuple_to_box_tuple(raw=raw, info=info)
 
     @model_validator(mode='after')
     def check_paddings_not_bigger_than_size(self: Self) -> Self:
@@ -114,8 +107,8 @@ class CustomizationSettings(BaseModel):
                 transformed = BoxTuple(
                     top=raw[0],
                     right=raw[1],
-                    bottom=raw[1],
-                    left=raw[2],
+                    bottom=raw[2],
+                    left=raw[1],
                 )
             case 4:
                 transformed = BoxTuple(

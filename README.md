@@ -171,7 +171,7 @@ Remember that type day before 13th day of any month, you get plan that starts
 in previous month. For example, date `2024-05-12` will creates plan on 
 April-May 2024, not May-June!
 
-## Settings
+    ## Settings
 
 You can customize plan using `settings.toml` file. It contains next settings:
 
