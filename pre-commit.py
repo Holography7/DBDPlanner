@@ -18,9 +18,9 @@ def run_subprocess_command(command: Sequence[LiteralString]) -> str:
     :returns: stdout output.:
     """
     use_shell = platform.system() == 'Windows'
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         command,
-        shell=use_shell,  # noqa: S603
+        shell=use_shell,
         capture_output=True,
         check=False,
     )
@@ -42,7 +42,7 @@ def check_updates() -> None:
     :returns: None
     """
     output = run_subprocess_command(
-        ('pip', 'list', '--outdated', '--exclude', 'pydantic-core'),
+        ('pip', 'list', '--outdated'),
     )
     if output:
         logging.warning(output)

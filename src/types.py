@@ -18,6 +18,20 @@ class CoordinatesTuple(NamedTuple):
         return f'Coordinate {self.x}x{self.y}'
 
 
+class Size(NamedTuple):
+    """NamedTuple that stores width and height."""
+
+    width: NonNegativeInt
+    height: NonNegativeInt
+
+    def __repr__(self: Self) -> str:
+        """Representation like "Size 10x10".
+
+        :returns: string like "Size 10x10".
+        """
+        return f'Size {self.width}x{self.height}'
+
+
 class BoxTuple(NamedTuple):
     """NamedTuple that stores any data bound with box sides.
 
@@ -47,6 +61,17 @@ class BoxTuple(NamedTuple):
         """
         return self.top + self.bottom
 
+    @property
+    def size(self: Self) -> Size:
+        """Get size of box.
+
+        :returns: Size object.
+        """
+        return Size(
+            width=self.right - self.left,
+            height=self.bottom - self.top,
+        )
+
     def __repr__(self: Self) -> str:
         """Representation like "Box (top,left)x(right,bottom)".
 
@@ -55,20 +80,6 @@ class BoxTuple(NamedTuple):
         :returns: string like "Box (top,left)x(right,bottom)".
         """
         return f'Box ({self.left},{self.top})x({self.right},{self.bottom})'
-
-
-class Size(NamedTuple):
-    """NamedTuple that stores width and height."""
-
-    width: NonNegativeInt
-    height: NonNegativeInt
-
-    def __repr__(self: Self) -> str:
-        """Representation like "Size 10x10".
-
-        :returns: string like "Size 10x10".
-        """
-        return f'Size {self.width}x{self.height}'
 
 
 class RGBColor(NamedTuple):

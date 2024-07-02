@@ -70,6 +70,7 @@ class DBDPlanner:
         )
         elements = []
         placeholders = []
+        first_day = current_date.weekday()
         for period_num, days in enumerate(periods):
             grade = Grade(period_num + 1)
             period_placeholder = placeholders_sources[grade]
@@ -78,7 +79,7 @@ class DBDPlanner:
                 placeholders.append(period_placeholder)
                 current_date += datetime.timedelta(days=1)
         columns = len(WeekdayShort)
-        rows = math.ceil(len(elements) / columns)
+        rows = math.ceil((len(elements) + first_day) / columns)
         dimensions = Dimensions(rows=rows, columns=columns)
         headers = tuple(weekday.value for weekday in WeekdayShort)
         header_font = FontLibrary()[self.settings.paths.header_font.stem]
@@ -89,6 +90,7 @@ class DBDPlanner:
             elements=elements,
             placeholders=placeholders,
             font=body_font,
+            start_from_column=first_day,
         )
         months_str = f'{current_month_name}-{next_month_name}'
         plan_filename = f'DBD plan {months_str} {self.year}.png'

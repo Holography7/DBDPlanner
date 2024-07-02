@@ -44,9 +44,9 @@ packaging==24.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-pillow==10.3.0
+pillow==10.4.0
     # via dbdplanner (pyproject.toml)
-pip==24.1
+pip==24.1.1
     # via dbdplanner (pyproject.toml)
 platformdirs==4.2.2
     # via
@@ -58,9 +58,9 @@ pluggy==1.5.0
     #   pytest
 pre-commit==3.7.1
     # via dbdplanner (pyproject.toml)
-pydantic==2.7.4
+pydantic==2.8.0
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.18.4
+pydantic-core==2.20.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
@@ -74,9 +74,9 @@ pyyaml==6.0.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-ruff==0.4.10
+ruff==0.5.0
     # via dbdplanner (pyproject.toml)
-setuptools==70.1.1
+setuptools==70.2.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
@@ -84,7 +84,7 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.2.15
+uv==0.2.18
     # via dbdplanner (pyproject.toml)
 virtualenv==20.26.3
     # via

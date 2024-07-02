@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Literal, Self
+from typing import LiteralString, Self
 
 from PIL import Image, ImageDraw, ImageOps
 from PIL.Image import Resampling
@@ -86,6 +86,7 @@ class PlanRenderer:
         elements: Sequence[str],
         placeholders: Sequence[Image.Image],
         font: FreeTypeFont,
+        start_from_column: int = 0,
     ) -> None:
         """Draw plan.
 
@@ -94,104 +95,93 @@ class PlanRenderer:
         :param Sequence[Image.Image] placeholders: sequence of images that is
          backgrounds for elements.
         :param FreeTypeFont font: font of elements.
+        :param int start_from_column: index of column of first row where need
+         to start fill cells by elements and placeholders.
         :returns: None
         """
         if len(elements) != len(placeholders):
             msg = 'Sequences of elements and placeholders must have same size.'
             raise ValueError(msg)
+        columns = self.dimensions.columns
+        if start_from_column < 0 or start_from_column > columns:
+            msg = f'Column index must be between 0 and {columns}.'
+            raise ValueError(msg)
+        cell_size = self.settings.cell_size
+        plan_margins = self.settings.plan_margins
+        cell_paddings = self.settings.cell_paddings
         for element_num, placeholder in enumerate(placeholders):
-            column = element_num % self.dimensions.columns
+            shifted_element_num = element_num + start_from_column
+            column = shifted_element_num % columns
             # first row is header always
-            row = (element_num // self.dimensions.columns) + 1
+            row = (shifted_element_num // columns) + 1
             placeholder_resized = ImageOps.contain(
                 image=placeholder,
                 # PyCharm bad works with NamedTuple
                 size=self.allowable_placeholder_size,
                 method=Resampling.LANCZOS,
             )
-            paste_to = self.get_coordinate_to_paste_placeholder(
-                row=row,
-                column=column,
-                placeholder_size=Size(*placeholder_resized.size),
+            cell_top = plan_margins.top + row * cell_size.height
+            cell_left = plan_margins.left + column * cell_size.width
+            cell_box = BoxTuple(
+                top=cell_top + cell_paddings.top,
+                right=cell_left + cell_size.width + cell_paddings.right,
+                bottom=cell_top + cell_size.height + cell_paddings.bottom,
+                left=cell_left + cell_paddings.left,
+            )
+            paste_to = self.get_coordinate_to_place_object_at_center(
+                box=cell_box,
+                object_size=Size(*placeholder_resized.size),
+                object_name='Placeholder',
             )
             self.image.paste(
                 im=placeholder_resized,
                 box=paste_to,
                 mask=placeholder_resized,
             )
-            top = paste_to.y
-            bottom = paste_to.y + placeholder_resized.size[1]
-            left = paste_to.x
-            right = paste_to.x + placeholder_resized.size[0]
-            box = BoxTuple(top=top, right=right, bottom=bottom, left=left)
+            placeholder_box = BoxTuple(
+                top=paste_to.y,
+                right=paste_to.x + placeholder_resized.size[0],
+                bottom=paste_to.y + placeholder_resized.size[1],
+                left=paste_to.x,
+            )
             self.draw_text_in_box(
                 text=elements[element_num],
                 font=font,
                 color=self.settings.body_text_color,
-                box=box,
+                box=placeholder_box,
             )
 
-    def get_coordinate_to_paste_placeholder(
-        self: Self,
-        row: int,
-        column: int,
-        placeholder_size: Size,
+    @staticmethod
+    def get_coordinate_to_place_object_at_center(
+        box: BoxTuple,
+        object_size: Size,
+        object_name: LiteralString = 'Object',
     ) -> CoordinatesTuple:
-        """Get coordinates where need to paste placeholder.
+        """Get coordinates where need to paste object at center of box.
 
-        :param int row: row of plan table.
-        :param int column: column of plan table.
-        :param Size placeholder_size: placeholder size that need to paste.
-        :returns: coordinates where need to paste placeholder.
+        :param BoxTuple box: box where need to place object.
+        :param Size object_size: object size that need to paste.
+        :param LiteralString object_name: object name as context.
+        :returns: coordinates where need to paste object.
         """
-        self.__validate_dimension(value=row, dimension='Row')
-        self.__validate_dimension(value=column, dimension='Column')
+        box_size = box.size
         if (
-            placeholder_size.width > self.allowable_placeholder_size.width
-            or placeholder_size.height > self.allowable_placeholder_size.height
+            object_size.width > box_size.width
+            or object_size.height > box_size.height
         ):
             msg = (
-                f'Placeholder size is out of bounds of free space in cell ('
-                f'{placeholder_size} > {self.allowable_placeholder_size})'
+                f'{object_name.title()} size is out of bounds of box ('
+                f'{object_size} > {box_size})'
             )
             raise ValueError(msg)
-        cell_size = self.settings.cell_size
-        x_cell = self.settings.plan_margins.left + column * cell_size.width
-        y_cell = self.settings.plan_margins.top + row * cell_size.height
-        # size of placeholder may not exactly equal cell size, so needs to
-        #  add insufficient pixels to place placeholder to center of cell
-        x_insufficient = cell_size.width - placeholder_size.width
-        y_insufficient = cell_size.height - placeholder_size.height
+        # size of object may not exactly equal cell size, so needs to add
+        #  insufficient pixels to place placeholder to center of cell
+        x_insufficient = (box_size.width - object_size.width) // 2
+        y_insufficient = (box_size.height - object_size.height) // 2
         return CoordinatesTuple(
-            x=x_cell + self.settings.cell_paddings.left + x_insufficient // 2,
-            y=y_cell + self.settings.cell_paddings.top + y_insufficient // 2,
+            x=box.left + x_insufficient,
+            y=box.top + y_insufficient,
         )
-
-    def __validate_dimension(
-        self: Self,
-        value: int,
-        dimension: Literal['Row', 'Column'] = 'Row',
-    ) -> None:
-        """Validate row or column value.
-
-        :param int value: value.
-        :param Literal['Row', 'Column'] dimension: name of dimension, 'Row'
-         default.
-        :return: None
-        """
-        if dimension == 'Row':
-            max_dimension = self.dimensions.rows
-        else:
-            max_dimension = self.dimensions.columns
-        if value < 0:
-            msg = f'{dimension} must be positive integer.'
-            raise ValueError(msg)
-        if value > max_dimension:
-            msg = (
-                f'{dimension} is out of bounds for this plan: {value} >= '
-                f'{max_dimension}'
-            )
-            raise ValueError(msg)
 
     def draw_text_in_box(
         self: Self,
@@ -210,16 +200,10 @@ class PlanRenderer:
         :return: None
         """
         textbox_size = self.get_textbox_size(text=text, font=font)
-        # shift text to draw it at center of box
-        x_shift = (box.right - box.left - textbox_size.width) // 2
-        y_shift = (box.bottom - box.top - textbox_size.height) // 2
-        where_to_draw = CoordinatesTuple(
-            x=box.left + x_shift,
-            y=box.top + y_shift,
-        )
-        where_to_draw = self.get_coordinates_where_draw_text(
+        where_to_draw = self.get_coordinate_to_place_object_at_center(
             box=box,
-            textbox_size=textbox_size,
+            object_size=textbox_size,
+            object_name='Textbox',
         )
         self.draw.text(
             xy=where_to_draw,
@@ -248,35 +232,6 @@ class PlanRenderer:
             anchor=TEXT_ANCHOR,
         )
         return Size(width=width, height=height)
-
-    @staticmethod
-    def get_coordinates_where_draw_text(
-        box: BoxTuple,
-        textbox_size: Size,
-    ) -> CoordinatesTuple:
-        """Get coordinates where to draw text at center of box.
-
-        :param BoxTuple box: coordinates of box.
-        :param AxisTuple textbox_size: size of box with text.
-        :return: coordinates where need to draw (CoordinatesTuple)
-        text.
-        """
-        box_size = Size(
-            width=box.right - box.left,
-            height=box.bottom - box.top,
-        )
-        if (
-            textbox_size.width > box_size.width
-            or textbox_size.height > box_size.height
-        ):
-            msg = (
-                f'Textbox is bigger than box where you want draw text. Box '
-                f'size: {box_size}, textbox size: {textbox_size}'
-            )
-            raise ValueError(msg)
-        x_shift = (box_size.width - textbox_size.width) // 2
-        y_shift = (box_size.height - textbox_size.height) // 2
-        return CoordinatesTuple(x=box.left + x_shift, y=box.top + y_shift)
 
     def save_image(self: Self, path: Path) -> None:
         """Save plan image.

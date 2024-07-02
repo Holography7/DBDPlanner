@@ -6,17 +6,17 @@ annotated-types==0.7.0
     #   pydantic
 click==8.1.7
     # via dbdplanner (pyproject.toml)
-pillow==10.3.0
+pillow==10.4.0
     # via dbdplanner (pyproject.toml)
-pip==24.1
+pip==24.1.1
     # via dbdplanner (pyproject.toml)
-pydantic==2.7.4
+pydantic==2.8.0
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.18.4
+pydantic-core==2.20.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
-setuptools==70.1.1
+setuptools==70.2.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
