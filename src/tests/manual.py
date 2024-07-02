@@ -290,8 +290,11 @@ def create_plan(date: datetime.date | str) -> None:
     This test contains calendar logic, so it's closest to testing all features.
     :return: None
     """
+    overridden_paths = SETTINGS.paths.model_copy(
+        update={'plans': TEST_RESULTS_PATH},
+    )
     overridden_settings = SETTINGS.model_copy(
-        update={'paths.plans': TEST_RESULTS_PATH},
+        update={'paths': overridden_paths},
     )
     planner = DBDPlanner(date=date, settings=overridden_settings)
     planner.create_plan_image()
