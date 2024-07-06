@@ -48,6 +48,7 @@ class PlanRenderer:
             color=settings.background_color,
         )
         self.draw: ImageDraw.ImageDraw = ImageDraw.Draw(self.image)
+        self.__placeholders_cache: dict[int, Image.Image] = {}
 
     def draw_header(
         self: Self,
@@ -93,7 +94,14 @@ class PlanRenderer:
         :param Sequence[str] elements: sequence of text to draw in body of
          plan (numbers of days in months).
         :param Sequence[Image.Image] placeholders: sequence of images that is
-         backgrounds for elements.
+         backgrounds for elements. If you use same images in this sequence than
+         it's recommend to place in elements of this sequence link to same
+         object (not copy entire object or load from disk same image). In
+         process of drawing placeholder images could change size (to place into
+         cells). The result of changing size will cache in dict where key will
+         ID of original object. After caching, every time before change size of
+         image, renderer will try to find already resized placeholder to save
+         CPU time and reuse it.
         :param FreeTypeFont font: font of elements.
         :param int start_from_column: index of column of first row where need
          to start fill cells by elements and placeholders.
@@ -114,11 +122,8 @@ class PlanRenderer:
             column = shifted_element_num % columns
             # first row is header always
             row = (shifted_element_num // columns) + 1
-            placeholder_resized = ImageOps.contain(
-                image=placeholder,
-                # PyCharm bad works with NamedTuple
-                size=self.allowable_placeholder_size,
-                method=Resampling.LANCZOS,
+            placeholder_resized = self.__resize_placeholder(
+                placeholder=placeholder,
             )
             cell_top = plan_margins.top + row * cell_size.height
             cell_left = plan_margins.left + column * cell_size.width
@@ -150,6 +155,36 @@ class PlanRenderer:
                 color=self.settings.body_text_color,
                 box=placeholder_box,
             )
+
+    def __resize_placeholder(
+        self: Self,
+        placeholder: Image.Image,
+        resampling_method: Resampling = Resampling.LANCZOS,
+    ) -> Image.Image:
+        """Resize placeholder to place into cell.
+
+        This method using placeholders cache, that stores resized placeholders
+        with ID original object as key, so if you try resize Image object that
+        was cached, it will not try resize it again and return cached
+        placeholder. Also, it will not resize image if it's size is same as
+        allowable_placeholder_size.
+        :param Image.Image placeholder: placeholder image object.
+        :param Resampling resampling_method: Pillow's resampling method.
+        :returns: resized placeholder image object.
+        """
+        image_id = id(placeholder)
+        if image_id in self.__placeholders_cache:
+            return self.__placeholders_cache[image_id]
+        if placeholder.size == self.allowable_placeholder_size:
+            self.__placeholders_cache[image_id] = placeholder
+            return placeholder
+        self.__placeholders_cache[image_id] = ImageOps.contain(
+            image=placeholder,
+            # PyCharm bad works with NamedTuple
+            size=self.allowable_placeholder_size,
+            method=resampling_method,
+        )
+        return self.__placeholders_cache[image_id]
 
     @staticmethod
     def get_coordinate_to_place_object_at_center(
