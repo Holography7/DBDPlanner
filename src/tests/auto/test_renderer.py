@@ -2,111 +2,109 @@ from typing import Self
 
 import pytest
 
+from src.enums import StrColor
 from src.renderer import PlanRenderer
-from src.types import BoxTuple, CoordinatesTuple, Size
+from src.schemas import CustomizationSettings
+from src.types import BoxTuple, CoordinatesTuple, Dimensions, PlanCell, Size
 
 
 class TestPlanRenderer:
     """Test cases for class that rendering plan image."""
 
-    CASES_FOR_PLACE_OBJECT = (
-        # Scheme:
-        # 1. Box inside which need to place object
-        # 2. Object size
-        # 3. Expected coordinate where need to place object
-        (
-            BoxTuple(top=10, right=20, bottom=20, left=10),
-            Size(width=10, height=10),
-            CoordinatesTuple(x=10, y=10),
-        ),
-        (
-            BoxTuple(top=0, right=10, bottom=10, left=0),
-            Size(width=10, height=10),
-            CoordinatesTuple(x=0, y=0),
-        ),
-        (
-            BoxTuple(top=10, right=100, bottom=100, left=10),
-            Size(width=50, height=50),
-            CoordinatesTuple(x=30, y=30),
-        ),
-        (
-            BoxTuple(top=5, right=100, bottom=65, left=10),
-            Size(width=70, height=30),
-            CoordinatesTuple(x=20, y=20),
-        ),
-    )
-    CASES_FOR_PLACE_OBJECT_FAIL = (
-        # Scheme:
-        # 1. Box inside which need place object
-        # 2. Object size. For that test, it must be larger than box.
-        (
-            BoxTuple(top=0, right=10, bottom=10, left=0),
-            Size(width=11, height=11),
-        ),
-        (
-            BoxTuple(top=0, right=10, bottom=10, left=0),
-            Size(width=11, height=10),
-        ),
-        (
-            BoxTuple(top=0, right=10, bottom=10, left=0),
-            Size(width=10, height=11),
-        ),
-    )
-
-    @pytest.mark.parametrize(
-        ('box', 'object_size', 'expected_coordinate'),
-        CASES_FOR_PLACE_OBJECT,
-        ids=(
-            f'{case[0]}, object {case[1]}, expected {case[2]}'
-            for case in CASES_FOR_PLACE_OBJECT
-        ),
-    )
     def test_get_coordinates_where_draw_text(
         self: Self,
-        box: BoxTuple,
+        box_tuple: BoxTuple,
         object_size: Size,
-        expected_coordinate: CoordinatesTuple,
     ) -> None:
         """Testing getting coordinates for drawing text in box.
 
-        :param BoxTuple box: parameter with box coordinates inside which need
+        :param BoxTuple box_tuple: fixture of box coordinates inside which need
          draw text.
-        :param Size object_size: parameter with size of object.
-        :param CoordinatesTuple expected_coordinate: parameter with expected
-         coordinates where must draw text.
+        :param Size object_size: fixture of size of object.
         :returns: None
         """
+        box_size = box_tuple.size
+        object_bigger_than_box = (
+            box_size.width < object_size.width
+            or box_size.height < object_size.height
+        )
+        if object_bigger_than_box:
+            expected = None
+        else:
+            expected = CoordinatesTuple(
+                x=box_tuple.left + (box_size.width - object_size.width) // 2,
+                y=box_tuple.top + (box_size.height - object_size.height) // 2,
+            )
+
+        if object_bigger_than_box:
+            with pytest.raises(ValueError):
+                PlanRenderer.get_coordinate_to_place_object_at_center(
+                    box=box_tuple,
+                    object_size=object_size,
+                )
+            return
         result = PlanRenderer.get_coordinate_to_place_object_at_center(
-            box=box,
+            box=box_tuple,
             object_size=object_size,
         )
 
-        assert result == expected_coordinate
+        assert result == expected
 
-    @pytest.mark.parametrize(
-        ('box', 'object_size'),
-        CASES_FOR_PLACE_OBJECT_FAIL,
-        ids=(
-            'Object larger with both dimensions',
-            'Object larger with width',
-            'Object larger with height',
-        ),
-    )
-    def test_get_coordinates_where_draw_text_fail(
+    # Complicated test, but necessary
+    def test_get_cell_box(  # noqa: PLR0913
         self: Self,
-        box: BoxTuple,
-        object_size: Size,
+        plan_cell: PlanCell,
+        dimensions: Dimensions,
+        plan_margins: BoxTuple,
+        cell_paddings: BoxTuple,
+        cell_size: Size,
     ) -> None:
-        """Testing getting coordinates for drawing text in box: failing cases.
+        """Test getting cell box.
 
-        :param BoxTuple box: parameter with box coordinates inside which need
-         to draw text.
-        :param Size object_size: parameter with size of object. For that
-         test, it must be larger than box.
+        :param PlanCell plan_cell: fixture of plan cell (cell coordinate with
+         row and column).
+        :param Dimensions dimensions: fixture of dimensions of plan.
+        :param BoxTuple plan_margins: fixture of plan margins.
+        :param BoxTuple cell_paddings: fixture of cell paddings.
+        :param Size cell_size: fixture of cell size.
         :returns: None
         """
-        with pytest.raises(ValueError):
-            PlanRenderer.get_coordinate_to_place_object_at_center(
-                box=box,
-                object_size=object_size,
+        settings = CustomizationSettings(
+            header_font_size=1,
+            body_font_size=1,
+            header_text_color=StrColor.BLACK,
+            body_text_color=StrColor.BLACK,
+            background_color=StrColor.BLACK,
+            plan_margins=plan_margins,
+            cell_paddings=cell_paddings,
+            cell_size=cell_size,
+        )
+        cell_coordinate_out_of_bounds = (
+            plan_cell.row > dimensions.rows
+            or plan_cell.column > dimensions.columns
+        )
+        if cell_coordinate_out_of_bounds:
+            expected = None
+        else:
+            top = (
+                plan_margins.top
+                + cell_paddings.top
+                + (cell_size.height * plan_cell.row)
             )
+            left = (
+                plan_margins.left
+                + cell_paddings.left
+                + (cell_size.width * plan_cell.column)
+            )
+            bottom = top + cell_size.height - cell_paddings.y
+            right = left + cell_size.width - cell_paddings.x
+            expected = BoxTuple(top=top, right=right, bottom=bottom, left=left)
+        renderer = PlanRenderer(dimensions=dimensions, settings=settings)
+
+        if cell_coordinate_out_of_bounds:
+            with pytest.raises(ValueError):
+                renderer.get_cell_box(cell=plan_cell)
+            return
+        result = renderer.get_cell_box(cell=plan_cell)
+
+        assert result == expected

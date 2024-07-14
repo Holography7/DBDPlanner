@@ -54,7 +54,7 @@ def check_updates() -> None:
 @click.option(
     '--expected-coverage',
     '-e',
-    default=30,
+    default=65,
     type=int,
     help=(
         'Expected coverage percent. If actual coverage will lower that this '
@@ -72,7 +72,7 @@ def coverage(file: TextIO, expected_coverage: int) -> None:
     :returns: None
     """
     parsed = json.load(file)
-    total = int(parsed['totals']['percent_covered'])
+    total = round(parsed['totals']['percent_covered'])
     if total < expected_coverage:
         logging.error(
             'Your coverage %s%% is lower than %s%%',

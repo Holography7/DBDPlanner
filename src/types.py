@@ -96,6 +96,20 @@ class Dimensions(NamedTuple):
     rows: NonNegativeInt
     columns: NonNegativeInt
 
+    def __repr__(self: Self) -> str:
+        """Representation like "Dimensions (rows = 10, columns = 10)".
+
+        :returns: string like "Dimensions (rows = 10, columns = 10)".
+        """
+        return f'Dimensions (rows = {self.rows}, columns = {self.columns})'
+
+
+class PlanCell(NamedTuple):
+    """NamedTuple that stores coordinate of cell in plan."""
+
+    row: NonNegativeInt
+    column: NonNegativeInt
+
 
 class FontParams(TypedDict):
     """TypedDict of params for loading fonts."""

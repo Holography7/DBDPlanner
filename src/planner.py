@@ -27,7 +27,7 @@ class DBDPlanner:
 
         :param datetime.date | str date: date between 13th days of two months.
         :param Settings settings: pydantic model with settings.
-        :return: None
+        :returns: None
         """
         if isinstance(date, str):
             date_obj = datetime.date.fromisoformat(date)
@@ -48,7 +48,7 @@ class DBDPlanner:
     def create_plan_image(self: Self) -> None:
         """Create plan image.
 
-        :return: Image
+        :returns: Image
         """
         placeholders_sources: dict[Grade, Image.Image] = {
             grade: Image.open(
@@ -84,7 +84,10 @@ class DBDPlanner:
         headers = tuple(weekday.value for weekday in WeekdayShort)
         header_font = FontLibrary()[self.settings.paths.header_font.stem]
         body_font = FontLibrary()[self.settings.paths.body_font.stem]
-        renderer = PlanRenderer(dimensions=dimensions)
+        renderer = PlanRenderer(
+            dimensions=dimensions,
+            settings=self.settings.customization,
+        )
         renderer.draw_header(headers=headers, font=header_font)
         renderer.draw_plan(
             elements=elements,
@@ -105,7 +108,7 @@ class DBDPlanner:
         last period that could be higher if left some days before deadline.
         :param int count_periods: count periods
         :param int deadline: count days to upgrade to last grade.
-        :return: sequence of count days for each period
+        :returns: sequence of count days for each period
         """
         periods = list(range(1, count_periods + 1))
         remain_days = deadline - sum(periods)

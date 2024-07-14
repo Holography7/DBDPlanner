@@ -8,8 +8,14 @@ from PIL.ImageFont import FreeTypeFont
 
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
 from src.schemas import CustomizationSettings
-from src.settings import SETTINGS
-from src.types import BoxTuple, CoordinatesTuple, Dimensions, RGBColor, Size
+from src.types import (
+    BoxTuple,
+    CoordinatesTuple,
+    Dimensions,
+    PlanCell,
+    RGBColor,
+    Size,
+)
 
 
 class PlanRenderer:
@@ -18,7 +24,7 @@ class PlanRenderer:
     def __init__(
         self: Self,
         dimensions: Dimensions,
-        settings: CustomizationSettings = SETTINGS.customization,
+        settings: CustomizationSettings,
     ) -> None:
         """Initialize background image to render plan on it.
 
@@ -114,25 +120,17 @@ class PlanRenderer:
         if start_from_column < 0 or start_from_column > columns:
             msg = f'Column index must be between 0 and {columns}.'
             raise ValueError(msg)
-        cell_size = self.settings.cell_size
-        plan_margins = self.settings.plan_margins
-        cell_paddings = self.settings.cell_paddings
         for element_num, placeholder in enumerate(placeholders):
             shifted_element_num = element_num + start_from_column
-            column = shifted_element_num % columns
-            # first row is header always
-            row = (shifted_element_num // columns) + 1
+            cell = PlanCell(
+                # first row is header always
+                row=(shifted_element_num // columns) + 1,
+                column=shifted_element_num % columns,
+            )
             placeholder_resized = self.__resize_placeholder(
                 placeholder=placeholder,
             )
-            cell_top = plan_margins.top + row * cell_size.height
-            cell_left = plan_margins.left + column * cell_size.width
-            cell_box = BoxTuple(
-                top=cell_top + cell_paddings.top,
-                right=cell_left + cell_size.width + cell_paddings.right,
-                bottom=cell_top + cell_size.height + cell_paddings.bottom,
-                left=cell_left + cell_paddings.left,
-            )
+            cell_box = self.get_cell_box(cell=cell)
             paste_to = self.get_coordinate_to_place_object_at_center(
                 box=cell_box,
                 object_size=Size(*placeholder_resized.size),
@@ -155,6 +153,33 @@ class PlanRenderer:
                 color=self.settings.body_text_color,
                 box=placeholder_box,
             )
+
+    def get_cell_box(self: Self, cell: PlanCell) -> BoxTuple:
+        """Get box of cell.
+
+        :param PlanCell cell: cell coordinates (row and column).
+        :returns: BoxTuple of cell.
+        """
+        if (
+            cell.row > self.dimensions.rows
+            or cell.column > self.dimensions.columns
+        ):
+            msg = (
+                f'Cell coordinate is out of bounds of this plan (row = '
+                f'{cell.row}, column = {cell.column}, {self.dimensions})'
+            )
+            raise ValueError(msg)
+        cell_size = self.settings.cell_size
+        plan_margins = self.settings.plan_margins
+        cell_paddings = self.settings.cell_paddings
+        top_no_padding = plan_margins.top + cell.row * cell_size.height
+        left_bo_padding = plan_margins.left + cell.column * cell_size.width
+        return BoxTuple(
+            top=top_no_padding + cell_paddings.top,
+            right=left_bo_padding + cell_size.width - cell_paddings.right,
+            bottom=top_no_padding + cell_size.height - cell_paddings.bottom,
+            left=left_bo_padding + cell_paddings.left,
+        )
 
     def __resize_placeholder(
         self: Self,
@@ -232,7 +257,7 @@ class PlanRenderer:
         :param RGBColor | str color: color of text in HTML word or RGB
          sequence.
         :param BoxTuple box: coordinates of box.
-        :return: None
+        :returns: None
         """
         textbox_size = self.get_textbox_size(text=text, font=font)
         where_to_draw = self.get_coordinate_to_place_object_at_center(
@@ -257,7 +282,7 @@ class PlanRenderer:
 
         :param str text: text to get the size from.
         :param FreeTypeFont font: font of text.
-        :return: Size object of textbox.
+        :returns: Size object of textbox.
         """
         upper_left_coordinate = CoordinatesTuple(x=0, y=0)
         left, up, width, height = self.draw.textbbox(
@@ -272,6 +297,6 @@ class PlanRenderer:
         """Save plan image.
 
         :param Path path: where needs to save image.
-        :return: None
+        :returns: None
         """
         self.image.save(path)
