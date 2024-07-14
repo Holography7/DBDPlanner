@@ -10,7 +10,7 @@ cfgv==3.4.0
     #   pre-commit
 click==8.1.7
     # via dbdplanner (pyproject.toml)
-coverage==7.5.4
+coverage==7.6.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
@@ -22,7 +22,7 @@ filelock==3.15.4
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
-identify==2.5.36
+identify==2.6.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
@@ -46,7 +46,7 @@ packaging==24.1
     #   pytest
 pillow==10.4.0
     # via dbdplanner (pyproject.toml)
-pip==24.1.1
+pip==24.1.2
     # via dbdplanner (pyproject.toml)
 platformdirs==4.2.2
     # via
@@ -74,9 +74,9 @@ pyyaml==6.0.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-ruff==0.5.1
+ruff==0.5.2
     # via dbdplanner (pyproject.toml)
-setuptools==70.2.0
+setuptools==70.3.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
@@ -84,7 +84,7 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.2.21
+uv==0.2.24
     # via dbdplanner (pyproject.toml)
 virtualenv==20.26.3
     # via

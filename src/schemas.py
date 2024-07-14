@@ -13,6 +13,7 @@ from pydantic_core.core_schema import ValidationInfo
 
 from src.enums import StrColor
 from src.types import BoxTuple, RGBColor, Size
+from src.utils import transform_to_box_tuple
 
 
 class PathSettings(BaseModel):
@@ -40,23 +41,18 @@ class CustomizationSettings(BaseModel):
     @classmethod
     def transform_to_box_tuple(
         cls: type[Self],
-        raw: int | Sequence[int],
-        info: ValidationInfo,
+        raw: int | Sequence[int] | BoxTuple,
     ) -> BoxTuple:
         """Transform raw value to BoxTuple instance.
 
-        :param int | Sequence[int] raw: integer or sequence with len from 1 to
-         4 that will convert to BoxTuple (tuple with length with 4 elements).
-        :param ValidationInfo info: pydantic validation info.
+        :param int | Sequence[int] | BoxTuple raw: integer or sequence with len
+         from 1 to 4 that will convert to BoxTuple (tuple with length with 4
+         elements).
         :returns: BoxTuple.
         """
-        type_of_raw = type(raw)
-        if type_of_raw not in {int, list, tuple}:
-            msg = 'Must be positive integer or list with 1-4 elements'
-            raise ValueError(msg)
-        if isinstance(raw, int):
-            return BoxTuple(top=raw, right=raw, bottom=raw, left=raw)
-        return cls.__transform_tuple_to_box_tuple(raw=raw, info=info)
+        if isinstance(raw, BoxTuple):
+            return raw
+        return transform_to_box_tuple(value=raw)
 
     @model_validator(mode='after')
     def check_paddings_not_bigger_than_size(self: Self) -> Self:

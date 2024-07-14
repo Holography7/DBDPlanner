@@ -8,7 +8,6 @@ from PIL.ImageFont import FreeTypeFont
 
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
 from src.schemas import CustomizationSettings
-from src.settings import SETTINGS
 from src.types import BoxTuple, CoordinatesTuple, Dimensions, RGBColor, Size
 
 
@@ -18,7 +17,7 @@ class PlanRenderer:
     def __init__(
         self: Self,
         dimensions: Dimensions,
-        settings: CustomizationSettings = SETTINGS.customization,
+        settings: CustomizationSettings,
     ) -> None:
         """Initialize background image to render plan on it.
 
@@ -114,9 +113,6 @@ class PlanRenderer:
         if start_from_column < 0 or start_from_column > columns:
             msg = f'Column index must be between 0 and {columns}.'
             raise ValueError(msg)
-        cell_size = self.settings.cell_size
-        plan_margins = self.settings.plan_margins
-        cell_paddings = self.settings.cell_paddings
         for element_num, placeholder in enumerate(placeholders):
             shifted_element_num = element_num + start_from_column
             column = shifted_element_num % columns
@@ -125,14 +121,7 @@ class PlanRenderer:
             placeholder_resized = self.__resize_placeholder(
                 placeholder=placeholder,
             )
-            cell_top = plan_margins.top + row * cell_size.height
-            cell_left = plan_margins.left + column * cell_size.width
-            cell_box = BoxTuple(
-                top=cell_top + cell_paddings.top,
-                right=cell_left + cell_size.width + cell_paddings.right,
-                bottom=cell_top + cell_size.height + cell_paddings.bottom,
-                left=cell_left + cell_paddings.left,
-            )
+            cell_box = self.get_cell_box(row=row, column=column)
             paste_to = self.get_coordinate_to_place_object_at_center(
                 box=cell_box,
                 object_size=Size(*placeholder_resized.size),
@@ -155,6 +144,33 @@ class PlanRenderer:
                 color=self.settings.body_text_color,
                 box=placeholder_box,
             )
+
+    def get_cell_box(self: Self, row: int, column: int) -> BoxTuple:
+        """Get box of cell.
+
+        :param int row: row index (0 is header row).
+        :param int column: column index.
+        :returns: BoxTuple of cell.
+        """
+        if row > self.dimensions.rows or column > self.dimensions.columns:
+            msg = (
+                f'Cell coordinate is out of bounds of this plan (row = {row}, '
+                f'column = {column}, {self.dimensions})'
+            )
+            raise ValueError(msg)
+        cell_size = self.settings.cell_size
+        plan_margins = self.settings.plan_margins
+        cell_paddings = self.settings.cell_paddings
+        top = plan_margins.top + cell_paddings.top + row * cell_size.height
+        left = (
+            plan_margins.left + cell_paddings.left + (column * cell_size.width)
+        )
+        return BoxTuple(
+            top=top,
+            right=left + self.allowable_placeholder_size.width,
+            bottom=top + self.allowable_placeholder_size.height,
+            left=left,
+        )
 
     def __resize_placeholder(
         self: Self,
@@ -232,7 +248,7 @@ class PlanRenderer:
         :param RGBColor | str color: color of text in HTML word or RGB
          sequence.
         :param BoxTuple box: coordinates of box.
-        :return: None
+        :returns: None
         """
         textbox_size = self.get_textbox_size(text=text, font=font)
         where_to_draw = self.get_coordinate_to_place_object_at_center(
@@ -257,7 +273,7 @@ class PlanRenderer:
 
         :param str text: text to get the size from.
         :param FreeTypeFont font: font of text.
-        :return: Size object of textbox.
+        :returns: Size object of textbox.
         """
         upper_left_coordinate = CoordinatesTuple(x=0, y=0)
         left, up, width, height = self.draw.textbbox(
@@ -272,6 +288,6 @@ class PlanRenderer:
         """Save plan image.
 
         :param Path path: where needs to save image.
-        :return: None
+        :returns: None
         """
         self.image.save(path)

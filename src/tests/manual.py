@@ -79,7 +79,7 @@ def create_background_image(
      background color.
     :param tuple[int, int, int] | None rgb_color: 3 RGB numbers of background
      color. Overrides --hrml-color if selected.
-    :return: None
+    :returns: None
     """
     updated_settings: dict[str, Any] = {}
     if cell_size:
@@ -138,7 +138,7 @@ def draw_header(
      text color.
     :param tuple[int, int, int] | None rgb_color: 3 RGB numbers of text color.
      Overrides --hrml-color if selected.
-    :return: None
+    :returns: None
     """
     updated_settings: dict[str, Any] = {}
     if html_color:
@@ -220,7 +220,7 @@ def draw_plan(
      text color.
     :param tuple[int, int, int] | None rgb_color: 3 RGB numbers of text color.
      Overrides --hrml-color if selected.
-    :return: None
+    :returns: None
     """
     updated_settings: dict[str, Any] = {}
     if html_color:
@@ -288,7 +288,7 @@ def create_plan(date: datetime.date | str) -> None:
     """Test creating plan.
 
     This test contains calendar logic, so it's closest to testing all features.
-    :return: None
+    :returns: None
     """
     overridden_paths = SETTINGS.paths.model_copy(
         update={'plans': TEST_RESULTS_PATH},

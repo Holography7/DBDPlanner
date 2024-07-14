@@ -15,7 +15,7 @@ class Singleton(type):
 
         :param Any args: positional arguments for creating class instance.
         :param Any kwargs: keyword arguments for creating class instance.
-        :return: class instance.
+        :returns: class instance.
         """
         if cls not in cls._instances:
             cls._instances[cls] = super().__call__(*args, **kwargs)
