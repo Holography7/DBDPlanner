@@ -1,7 +1,7 @@
 import pytest
 from _pytest.fixtures import SubRequest
 
-from src.types import BoxTuple, Dimensions, Size
+from src.types import BoxTuple, Dimensions, PlanCell, Size
 from src.utils import transform_to_box_tuple
 
 
@@ -32,24 +32,22 @@ def object_size(request: SubRequest) -> Size:
     return Size(*request.param)
 
 
-@pytest.fixture(params=(0, 1, 6), ids=('Row 0', 'Row 1', 'Row 6'))
-def row(request: SubRequest) -> int:
-    """Row index.
+@pytest.fixture(
+    params=((0, 0), (4, 0), (0, 3), (5, 6)),
+    ids=(
+        'Row = 0, Column = 0',
+        'Row = 4, Column = 0',
+        'Row = 0, Column = 3',
+        'Row = 5, Column = 6',
+    ),
+)
+def plan_cell(request: SubRequest) -> PlanCell:
+    """Plan cell (cell coordinates with row and column).
 
     :param SubRequest request: pytest request with fixture param.
-    :returns: row index.
+    :returns: plan cell coordinate.
     """
-    return request.param  # type: ignore[no-any-return]
-
-
-@pytest.fixture(params=(0, 1, 6), ids=('Column 0', 'Column 1', 'Column 6'))
-def column(request: SubRequest) -> int:
-    """Column index.
-
-    :param SubRequest request: pytest request with fixture param.
-    :returns: column index.
-    """
-    return request.param  # type: ignore[no-any-return]
+    return PlanCell(*request.param)
 
 
 @pytest.fixture(

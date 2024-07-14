@@ -5,7 +5,7 @@ import pytest
 from src.enums import StrColor
 from src.renderer import PlanRenderer
 from src.schemas import CustomizationSettings
-from src.types import BoxTuple, CoordinatesTuple, Dimensions, Size
+from src.types import BoxTuple, CoordinatesTuple, Dimensions, PlanCell, Size
 
 
 class TestPlanRenderer:
@@ -53,8 +53,7 @@ class TestPlanRenderer:
     # Complicated test, but necessary
     def test_get_cell_box(  # noqa: PLR0913
         self: Self,
-        row: int,
-        column: int,
+        plan_cell: PlanCell,
         dimensions: Dimensions,
         plan_margins: BoxTuple,
         cell_paddings: BoxTuple,
@@ -62,8 +61,8 @@ class TestPlanRenderer:
     ) -> None:
         """Test getting cell box.
 
-        :param int row: fixture of row index.
-        :param int column: fixture of column index.
+        :param PlanCell plan_cell: fixture of plan cell (cell coordinate with
+         row and column).
         :param Dimensions dimensions: fixture of dimensions of plan.
         :param BoxTuple plan_margins: fixture of plan margins.
         :param BoxTuple cell_paddings: fixture of cell paddings.
@@ -81,16 +80,21 @@ class TestPlanRenderer:
             cell_size=cell_size,
         )
         cell_coordinate_out_of_bounds = (
-            row > dimensions.rows or column > dimensions.columns
+            plan_cell.row > dimensions.rows
+            or plan_cell.column > dimensions.columns
         )
         if cell_coordinate_out_of_bounds:
             expected = None
         else:
-            top = plan_margins.top + cell_paddings.top + cell_size.height * row
+            top = (
+                plan_margins.top
+                + cell_paddings.top
+                + (cell_size.height * plan_cell.row)
+            )
             left = (
                 plan_margins.left
                 + cell_paddings.left
-                + (cell_size.width * column)
+                + (cell_size.width * plan_cell.column)
             )
             bottom = top + cell_size.height - cell_paddings.y
             right = left + cell_size.width - cell_paddings.x
@@ -99,8 +103,8 @@ class TestPlanRenderer:
 
         if cell_coordinate_out_of_bounds:
             with pytest.raises(ValueError):
-                renderer.get_cell_box(row=row, column=column)
+                renderer.get_cell_box(cell=plan_cell)
             return
-        result = renderer.get_cell_box(row=row, column=column)
+        result = renderer.get_cell_box(cell=plan_cell)
 
         assert result == expected

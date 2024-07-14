@@ -8,7 +8,14 @@ from PIL.ImageFont import FreeTypeFont
 
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
 from src.schemas import CustomizationSettings
-from src.types import BoxTuple, CoordinatesTuple, Dimensions, RGBColor, Size
+from src.types import (
+    BoxTuple,
+    CoordinatesTuple,
+    Dimensions,
+    PlanCell,
+    RGBColor,
+    Size,
+)
 
 
 class PlanRenderer:
@@ -115,13 +122,15 @@ class PlanRenderer:
             raise ValueError(msg)
         for element_num, placeholder in enumerate(placeholders):
             shifted_element_num = element_num + start_from_column
-            column = shifted_element_num % columns
-            # first row is header always
-            row = (shifted_element_num // columns) + 1
+            cell = PlanCell(
+                # first row is header always
+                row=(shifted_element_num // columns) + 1,
+                column=shifted_element_num % columns,
+            )
             placeholder_resized = self.__resize_placeholder(
                 placeholder=placeholder,
             )
-            cell_box = self.get_cell_box(row=row, column=column)
+            cell_box = self.get_cell_box(cell=cell)
             paste_to = self.get_coordinate_to_place_object_at_center(
                 box=cell_box,
                 object_size=Size(*placeholder_resized.size),
@@ -145,31 +154,31 @@ class PlanRenderer:
                 box=placeholder_box,
             )
 
-    def get_cell_box(self: Self, row: int, column: int) -> BoxTuple:
+    def get_cell_box(self: Self, cell: PlanCell) -> BoxTuple:
         """Get box of cell.
 
-        :param int row: row index (0 is header row).
-        :param int column: column index.
+        :param PlanCell cell: cell coordinates (row and column).
         :returns: BoxTuple of cell.
         """
-        if row > self.dimensions.rows or column > self.dimensions.columns:
+        if (
+            cell.row > self.dimensions.rows
+            or cell.column > self.dimensions.columns
+        ):
             msg = (
-                f'Cell coordinate is out of bounds of this plan (row = {row}, '
-                f'column = {column}, {self.dimensions})'
+                f'Cell coordinate is out of bounds of this plan (row = '
+                f'{cell.row}, column = {cell.column}, {self.dimensions})'
             )
             raise ValueError(msg)
         cell_size = self.settings.cell_size
         plan_margins = self.settings.plan_margins
         cell_paddings = self.settings.cell_paddings
-        top = plan_margins.top + cell_paddings.top + row * cell_size.height
-        left = (
-            plan_margins.left + cell_paddings.left + (column * cell_size.width)
-        )
+        top_no_padding = plan_margins.top + cell.row * cell_size.height
+        left_bo_padding = plan_margins.left + cell.column * cell_size.width
         return BoxTuple(
-            top=top,
-            right=left + self.allowable_placeholder_size.width,
-            bottom=top + self.allowable_placeholder_size.height,
-            left=left,
+            top=top_no_padding + cell_paddings.top,
+            right=left_bo_padding + cell_size.width - cell_paddings.right,
+            bottom=top_no_padding + cell_size.height - cell_paddings.bottom,
+            left=left_bo_padding + cell_paddings.left,
         )
 
     def __resize_placeholder(

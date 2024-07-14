@@ -104,6 +104,13 @@ class Dimensions(NamedTuple):
         return f'Dimensions (rows = {self.rows}, columns = {self.columns})'
 
 
+class PlanCell(NamedTuple):
+    """NamedTuple that stores coordinate of cell in plan."""
+
+    row: NonNegativeInt
+    column: NonNegativeInt
+
+
 class FontParams(TypedDict):
     """TypedDict of params for loading fonts."""
 

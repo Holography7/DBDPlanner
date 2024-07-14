@@ -41,7 +41,7 @@ class CustomizationSettings(BaseModel):
     @classmethod
     def transform_to_box_tuple(
         cls: type[Self],
-        raw: int | Sequence[int] | BoxTuple,
+        raw: int | list[int] | tuple[int, ...] | BoxTuple,
     ) -> BoxTuple:
         """Transform raw value to BoxTuple instance.
 
