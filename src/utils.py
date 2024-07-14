@@ -1,45 +1,69 @@
-from collections.abc import Sequence
-
 from src.types import BoxTuple
 
 
-def transform_to_box_tuple(value: int | Sequence[int]) -> BoxTuple:  # noqa: C901
-    """Transform integer or tuple to BoxTuple instance.
+def transform_int_to_box_tuple(value: int) -> BoxTuple:
+    """Transform integer to BoxTuple instance.
 
-    :param int | Sequence[int] value: integer or sequence with len from 1 to 4
-     that will convert to BoxTuple (tuple with length with 4 elements).
+    :param int value: integer that will convert to BoxTuple (tuple with 4
+     elements).
     :returns: BoxTuple.
     """
-    if type(value) not in {int, list, tuple}:
-        msg = 'Value must be positive integer or list with 1-4 elements'
+    if value < 0:
+        msg = 'Value must be positive integer'
         raise ValueError(msg)
-    if isinstance(value, int):
-        return BoxTuple(top=value, right=value, bottom=value, left=value)
+    return BoxTuple(top=value, right=value, bottom=value, left=value)
+
+
+def transform_sequence_to_box_tuple(
+    value: list[int] | tuple[int, ...],
+) -> BoxTuple:
+    """Transform list or tuple to BoxTuple instance.
+
+    :param list[int] | tuple[int, ...] value: sequence that will convert to
+     BoxTuple (tuple with length 4 elements).
+    :returns: BoxTuple.
+    """
     match len(value):
         case 1:
-            transformed = BoxTuple(
+            return BoxTuple(
                 top=value[0],
                 right=value[0],
                 bottom=value[0],
                 left=value[0],
             )
         case 2:
-            transformed = BoxTuple(
+            return BoxTuple(
                 top=value[0],
                 right=value[1],
                 bottom=value[0],
                 left=value[1],
             )
         case 3:
-            transformed = BoxTuple(
+            return BoxTuple(
                 top=value[0],
                 right=value[1],
                 bottom=value[2],
                 left=value[1],
             )
         case 4:
-            transformed = BoxTuple(*value)
+            return BoxTuple(*value)
         case _:
-            msg = 'Value must have length from 1 to 4.'
+            msg = 'Value must be with 1-4 elements.'
             raise ValueError(msg)
-    return transformed
+
+
+def transform_to_box_tuple(
+    value: int | list[int] | tuple[int, ...],
+) -> BoxTuple:
+    """Transform integer or list/tuple to BoxTuple instance.
+
+    :param int | Sequence[int] value: integer or list/tuple with len from 1 to
+     4 that will convert to BoxTuple (tuple with 4 elements).
+    :returns: BoxTuple.
+    """
+    if type(value) not in {int, list, tuple}:
+        msg = 'Value must be integer or list/tuple with 1-4 elements'
+        raise ValueError(msg)
+    if isinstance(value, int):
+        return transform_int_to_box_tuple(value=value)
+    return transform_sequence_to_box_tuple(value=value)
