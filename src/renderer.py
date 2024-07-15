@@ -74,18 +74,15 @@ class PlanRenderer:
                 f'{len(headers)}'
             )
             raise ValueError(msg)
-        plan_margins = self.settings.plan_margins
         for column, text in enumerate(headers):
-            top = self.settings.plan_margins.top
-            bottom = top + self.settings.cell_size.height
-            left = plan_margins.left + self.settings.cell_size.width * column
-            right = left + self.settings.cell_size.width
-            box = BoxTuple(top=top, right=right, bottom=bottom, left=left)
+            # first row is header always
+            cell = PlanCell(row=0, column=column)
+            cell_box = self.get_cell_box(cell=cell)
             self.draw_text_in_box(
                 text=text,
                 font=font,
                 color=self.settings.header_text_color,
-                box=box,
+                box=cell_box,
             )
 
     def draw_plan(
