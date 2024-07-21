@@ -37,7 +37,7 @@ higher):
 - Linux, in most cases, already installed, but if it's not:
 
    ```commandline
-  apt install python
+  sudo apt install python
    ```
 
 Also for Linux, you must ensure that your installed Python have version 3.12 
@@ -171,7 +171,7 @@ Remember that type day before 13th day of any month, you get plan that starts
 in previous month. For example, date `2024-05-12` will creates plan on 
 April-May 2024, not May-June!
 
-    ## Settings
+## Settings
 
 You can customize plan using `settings.toml` file. It contains next settings:
 
