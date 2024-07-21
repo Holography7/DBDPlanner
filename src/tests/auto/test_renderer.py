@@ -1,11 +1,13 @@
 from typing import Self
 
 import pytest
+from PIL.Image import Resampling
 
 from src.enums import StrColor
 from src.renderer import PlanRenderer
-from src.schemas import CustomizationSettings
+from src.schemas import CustomizationSettings, PathSettings, Settings
 from src.types import BoxTuple, CoordinatesTuple, Dimensions, PlanCell, Size
+from src.utils import correct_paths
 
 
 class TestPlanRenderer:
@@ -51,7 +53,7 @@ class TestPlanRenderer:
         assert result == expected
 
     # Complicated test, but necessary
-    def test_get_cell_box(  # noqa: PLR0913
+    def test_get_cell_box(
         self: Self,
         plan_cell: PlanCell,
         dimensions: Dimensions,
@@ -69,7 +71,15 @@ class TestPlanRenderer:
         :param Size cell_size: fixture of cell size.
         :returns: None
         """
-        settings = CustomizationSettings(
+        paths = {
+            'header_font': 'fonts/OpenSans-Regular.ttf',
+            'body_font': 'fonts/OpenSans-Regular.ttf',
+            'placeholders': 'images',
+            'plans': 'plans',
+        }
+        corrected_paths = correct_paths(initial=paths)
+        path_settings = PathSettings(**corrected_paths)
+        customization_settings = CustomizationSettings(
             header_font_size=1,
             body_font_size=1,
             header_text_color=StrColor.BLACK,
@@ -78,6 +88,11 @@ class TestPlanRenderer:
             plan_margins=plan_margins,
             cell_paddings=cell_paddings,
             cell_size=cell_size,
+            resampling_method=Resampling.LANCZOS,
+        )
+        settings = Settings(
+            paths=path_settings,
+            customization=customization_settings,
         )
         cell_coordinate_out_of_bounds = (
             plan_cell.row > dimensions.rows
@@ -108,3 +123,10 @@ class TestPlanRenderer:
         result = renderer.get_cell_box(cell=plan_cell)
 
         assert result == expected
+
+    def test_get_font(self: Self) -> None:
+        """Test getting font from included global mapping.
+
+        :returns: None
+        """
+        pytest.skip(reason='Not implemented')

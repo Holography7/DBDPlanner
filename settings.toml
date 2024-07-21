@@ -17,4 +17,4 @@ plan_margins = [0, 50]  # margins of whole plan from borders of image
 cell_paddings = [0, 0]  # paddings for each cell
 # next settings mean width and height
 cell_size = [360, 360]
-
+resampling_method = "Lanczos"

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from pathlib import Path
 from typing import NamedTuple, Self, TypedDict
 
@@ -44,6 +45,82 @@ class BoxTuple(NamedTuple):
     right: NonNegativeInt
     bottom: NonNegativeInt
     left: NonNegativeInt
+
+    @classmethod
+    def create_square(cls: type[Self], size: NonNegativeInt) -> Self:
+        """Create instance as square (box with sides with same size).
+
+        :param NonNegativeInt size: size of all sides of box.
+        :returns: BoxTuple with same size of sides.
+        """
+        if size < 0:
+            msg = 'Value must be positive integer'
+            raise ValueError(msg)
+        return cls(top=size, right=size, bottom=size, left=size)
+
+    @classmethod
+    def from_sequence(
+        cls: type[Self],
+        sequence: Sequence[NonNegativeInt],
+    ) -> Self:
+        """Create instance from sequence with 1-4 elements.
+
+        It will place values like it do HTML:
+        1 element - all sides (square).
+        2 elements - first for top and bottom, second for left and right.
+        3 elements - first for top, second for left and right, third for
+         bottom.
+        4 elements - top, right, bottom and left respectively.
+        :param Sequence[NonNegativeInt] sequence: sequence that will convert to
+         box. Must be with 1-4 elements.
+        :returns: BoxTuple with same size of sides.
+        """
+        match len(sequence):
+            case 1:
+                return cls.create_square(size=sequence[0])
+            case 2:
+                return cls(
+                    top=sequence[0],
+                    right=sequence[1],
+                    bottom=sequence[0],
+                    left=sequence[1],
+                )
+            case 3:
+                return cls(
+                    top=sequence[0],
+                    right=sequence[1],
+                    bottom=sequence[2],
+                    left=sequence[1],
+                )
+            case 4:
+                return cls(*sequence)
+            case _:
+                msg = 'Value must be with 1-4 elements.'
+                raise ValueError(msg)
+
+    @classmethod
+    def from_int_or_sequence(
+        cls: type[Self],
+        value: NonNegativeInt | Sequence[NonNegativeInt],
+    ) -> Self:
+        """Create instance from integer or sequence with 1-4 elements.
+
+        If got integer or sequence with 1 element, returns box as square.
+        If got sequence with 2-4 elements, it will place values like in HTML:
+        2 elements - first for top and bottom, second for left and right.
+        3 elements - first for top, second for left and right, third for
+         bottom.
+        4 elements - top, right, bottom and left respectively.
+        :param NonNegativeInt | Sequence[NonNegativeInt] value: integer or
+        sequence that will convert to box. Must be with 1-4 elements.
+        :returns: BoxTuple with same size of sides.
+        """
+        if type(value) not in {int, list, tuple}:
+            msg = 'Value must be integer or list/tuple with 1-4 elements'
+            raise ValueError(msg)
+        if isinstance(value, int):
+            return cls.create_square(size=value)
+        return cls.from_sequence(sequence=value)
 
     @property
     def x(self: Self) -> NonNegativeInt:

@@ -6,7 +6,6 @@ from typing import Any
 import click
 from PIL import Image
 
-from src.font_library import FontLibrary
 from src.planner import DBDPlanner
 from src.renderer import PlanRenderer
 from src.settings import SETTINGS
@@ -90,8 +89,11 @@ def create_background_image(
         updated_settings['background_color'] = html_color
     if rgb_color:
         updated_settings['background_color'] = RGBColor(*rgb_color)
-    overridden_settings = SETTINGS.customization.model_copy(
+    overridden_customization_settings = SETTINGS.customization.model_copy(
         update=updated_settings,
+    )
+    overridden_settings = SETTINGS.model_copy(
+        update={'customization': overridden_customization_settings},
     )
     click.echo('Initializing PlanRenderer...')
     renderer = PlanRenderer(
@@ -145,19 +147,21 @@ def draw_header(
         updated_settings['header_text_color'] = html_color
     if rgb_color:
         updated_settings['header_text_color'] = RGBColor(*rgb_color)
-    overridden_settings = SETTINGS.customization.model_copy(
+    overridden_customization_settings = SETTINGS.customization.model_copy(
         update=updated_settings,
+    )
+    overridden_settings = SETTINGS.model_copy(
+        update={'customization': overridden_customization_settings},
     )
     click.echo('Preparing data...')
     headers = tuple(str(i) for i in range(columns))
-    font = FontLibrary()[SETTINGS.paths.header_font.stem]
     click.echo('Preparing background...')
     renderer = PlanRenderer(
         dimensions=Dimensions(columns=columns, rows=0),
         settings=overridden_settings,
     )
     click.echo('Running method "draw_header"...')
-    renderer.draw_header(headers=headers, font=font)
+    renderer.draw_header(headers=headers)
     path = TEST_RESULTS_PATH / 'header.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')
@@ -227,8 +231,11 @@ def draw_plan(
         updated_settings['body_text_color'] = html_color
     if rgb_color:
         updated_settings['body_text_color'] = RGBColor(*rgb_color)
-    overridden_settings = SETTINGS.customization.model_copy(
+    overridden_customization_settings = SETTINGS.customization.model_copy(
         update=updated_settings,
+    )
+    overridden_settings = SETTINGS.model_copy(
+        update={'customization': overridden_customization_settings},
     )
     if placeholder == 'all':
         placeholders_files = (
@@ -257,14 +264,13 @@ def draw_plan(
         placeholders_sources[i % len(placeholders_sources)]
         for i in range(columns * rows)
     )
-    font = FontLibrary()[SETTINGS.paths.body_font.stem]
     click.echo('Preparing background...')
     renderer = PlanRenderer(
         dimensions=Dimensions(columns=columns, rows=rows),
         settings=overridden_settings,
     )
     click.echo('Running method "draw_plan"...')
-    renderer.draw_plan(elements=elements, placeholders=placeholders, font=font)
+    renderer.draw_plan(elements=elements, placeholders=placeholders)
     path = TEST_RESULTS_PATH / 'plan.png'
     renderer.save_image(path)
     click.echo(f'Image saved in {path}')

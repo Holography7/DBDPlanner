@@ -11,6 +11,7 @@ from src.exceptions import SettingsParsingError
 from src.settings_parser import SettingsParser
 from src.tests.utils import product_str
 from src.types import BoxTuple, RGBColor, Size
+from src.utils import correct_paths
 
 
 class TestSettingsParser:
@@ -36,6 +37,7 @@ class TestSettingsParser:
             # cell size for x and y.
             'cell_paddings': [20, 40, 70, 30],
             'cell_size': [360, 360],
+            'resampling_method': 'Lanczos',
         },
     }
     WRONG_DATA: ClassVar[dict[str, dict[str, Any]]] = {
@@ -54,6 +56,7 @@ class TestSettingsParser:
             'plan_margins': [-1, -2, -3, -4],
             'cell_paddings': [-1, -2, -3, -4],
             'cell_size': [-5, -6],
+            'resampling_method': 'wrong',
         },
     }
     ERRORS: ClassVar[set[str]] = {
@@ -79,6 +82,7 @@ class TestSettingsParser:
         'customization.cell_paddings.3',
         'customization.cell_size.0',
         'customization.cell_size.1',
+        'customization.resampling_method',
     }
     RGB_COLORS: ClassVar[dict[str, Sequence[int]]] = {
         StrColor.WHITE: [255, 255, 255],
@@ -94,27 +98,6 @@ class TestSettingsParser:
         'plan_margins',
         'cell_paddings',
     )
-
-    @staticmethod
-    def get_paths(initial: dict[str, str]) -> dict[str, str]:
-        """Get paths for testing.
-
-        You could run tests from different places: project root, "tests"
-        directory (that could do PyCharm for example), "src" or "auto" (why
-        not?). Depends on it, paths must be different to pass path validation.
-        :returns: dict with strings of paths.
-        """
-        match Path.cwd().name:
-            case 'src':
-                parent = '../'
-            case 'tests':
-                parent = '../../'
-            case 'auto':
-                parent = '../../../'
-            # means root directory
-            case _:
-                return initial
-        return {key: f'{parent}{value}' for key, value in initial.items()}
 
     def set_box_values(
         self: Self,
@@ -256,7 +239,7 @@ class TestSettingsParser:
         data = deepcopy(self.DATA)
         # you could run this test from not project root, so need change paths
         # to pass path validation
-        data['paths'] = self.get_paths(initial=data['paths'])
+        data['paths'] = correct_paths(initial=data['paths'])
         # change format of some fields
         if color_format == 'RGB':
             for color_field in self.COLOR_FIELDS:
@@ -314,3 +297,10 @@ class TestSettingsParser:
         """
         with pytest.raises(ValueError):
             SettingsParser.load_settings_from_toml(path=Path('not_toml.txt'))
+
+    def test_parse_toml(self: Self) -> None:
+        """Testing parsing toml file.
+
+        :returns: None
+        """
+        pytest.skip(reason='Not implemented')

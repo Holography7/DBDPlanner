@@ -2,7 +2,6 @@ import pytest
 from _pytest.fixtures import SubRequest
 
 from src.types import BoxTuple, Dimensions, PlanCell, Size
-from src.utils import transform_to_box_tuple
 
 
 @pytest.fixture(
@@ -85,7 +84,7 @@ def plan_margins(request: SubRequest) -> BoxTuple:
     :param SubRequest request: pytest request with fixture param.
     :returns: plan margins.
     """
-    return transform_to_box_tuple(value=request.param)
+    return BoxTuple.from_int_or_sequence(value=request.param)
 
 
 @pytest.fixture(
@@ -110,7 +109,7 @@ def cell_paddings(request: SubRequest) -> BoxTuple:
     :param SubRequest request: pytest request with fixture param.
     :returns: cell paddings.
     """
-    return transform_to_box_tuple(value=request.param)
+    return BoxTuple.from_int_or_sequence(value=request.param)
 
 
 @pytest.fixture(
