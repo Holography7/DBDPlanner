@@ -297,10 +297,3 @@ class TestSettingsParser:
         """
         with pytest.raises(ValueError):
             SettingsParser.load_settings_from_toml(path=Path('not_toml.txt'))
-
-    def test_parse_toml(self: Self) -> None:
-        """Testing parsing toml file.
-
-        :returns: None
-        """
-        pytest.skip(reason='Not implemented')

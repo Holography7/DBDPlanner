@@ -42,6 +42,14 @@ class BaseMapping(ABC, metaclass=SingletonABCMeta):
         """
         ...
 
+    @classmethod
+    def clear(cls: type[Self]) -> None:
+        """Clear mapping.
+
+        :returns: None
+        """
+        cls._mapping = {}  # type: ignore [method-assign, assignment]
+
 
 class GetOrAddABCMixin(ABC):
     """Abstract mixin that adding getting or adding element to mapping."""
@@ -145,10 +153,16 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         family = item.font.family
         style = item.font.style
         size = item.size
-        if self.is_font_exists(font=item):
-            msg = 'This font already exists in mapping.'
-            raise ValueError(msg)
-        self._mapping.update({family: {style: {size: item}}})
+        if family in self._mapping:
+            if style in self._mapping[family]:
+                if size in self._mapping[family][style]:
+                    msg = 'This font already exists in mapping.'
+                    raise ValueError(msg)
+                self._mapping[family][style][size] = item
+            else:
+                self._mapping[family][style] = {size: item}
+        else:
+            self._mapping[family] = {style: {size: item}}
 
     def __getitem__(
         self: Self,
@@ -178,8 +192,15 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         family = item.font.family
         style = item.font.style
         size = item.size
-        font_exists = self.is_font_exists(font=item)
-        self._mapping.update({family: {style: {size: item}}})
+        font_exists = False
+        if family in self._mapping:
+            if style in self._mapping[family]:
+                font_exists = size in self._mapping[family][style]
+                self._mapping[family][style][size] = item
+            else:
+                self._mapping[family][style] = {size: item}
+        else:
+            self._mapping[family] = {style: {size: item}}
         return item, font_exists
 
     def is_font_exists(self: Self, font: FreeTypeFont) -> bool:
@@ -214,8 +235,18 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
             return self.__path_mapping[path][size]
         except KeyError:
             font = ImageFont.truetype(font=path, size=size)
-            self.__path_mapping[path] = {size: font}
-        if self.is_font_exists(font=font):
-            return self._mapping[font.font.family][font.font.style][size]
-        self.add(item=font)
+            if path in self.__path_mapping:
+                self.__path_mapping[path][size] = font
+            else:
+                self.__path_mapping[path] = {size: font}
+        self.add_or_update(item=font)
         return font
+
+    @classmethod
+    def clear(cls: type[Self]) -> None:
+        """Clear mapping.
+
+        :returns: None
+        """
+        super().clear()
+        cls.__path_mapping = {}

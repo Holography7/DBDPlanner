@@ -68,7 +68,10 @@ pytest==8.3.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
+    #   pytest-mock
 pytest-cov==5.0.0
+    # via dbdplanner (pyproject.toml)
+pytest-mock==3.14.0
     # via dbdplanner (pyproject.toml)
 pyyaml==6.0.1
     # via
@@ -76,7 +79,7 @@ pyyaml==6.0.1
     #   pre-commit
 ruff==0.5.4
     # via dbdplanner (pyproject.toml)
-setuptools==71.0.4
+setuptools==71.1.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via

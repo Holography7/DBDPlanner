@@ -1,16 +1,23 @@
+from pathlib import Path
+
 import pytest
 from _pytest.fixtures import SubRequest
+from PIL import ImageFont
+from PIL.ImageFont import FreeTypeFont
 
+from src.dataclasses import FontParams
+from src.settings import SETTINGS
 from src.types import BoxTuple, Dimensions, PlanCell, Size
 
 
 @pytest.fixture(
     params=(
-        (10, 20, 20, 10),
-        (0, 10, 10, 0),
-        (10, 100, 100, 10),
-        (5, 100, 65, 10),
+        (9, 9, 9, 9),
+        (0, 10, 0, 10),
+        (10, 99, 7, 99),
+        (5, 56, 65, 10),
     ),
+    ids=('(9,9)x(9,9)', '(0,10)x(0,10)', '(10,99)x(7,99)', '(5,56)x(65,10)'),
 )
 def box_tuple(request: SubRequest) -> BoxTuple:
     """BoxTuple.
@@ -123,3 +130,48 @@ def cell_size(request: SubRequest) -> Size:
     :returns: cell size.
     """
     return Size(*request.param)
+
+
+@pytest.fixture(
+    params=(1, 12, 72, 100, 1000),
+    ids=tuple(f'Font size {size}' for size in (1, 12, 72, 100, 1000)),
+)
+def font_size(request: SubRequest) -> int:
+    """Font size.
+
+    :param SubRequest request: pytest request with fixture param.
+    :returns: font size.
+    """
+    return request.param  # type: ignore [no-any-return]
+
+
+@pytest.fixture(
+    params=('font params', SETTINGS.paths.header_font, None),
+    ids=('Font params', 'Manually loaded font', 'Default font'),
+)
+def font_param(
+    request: SubRequest,
+    font_size: int,
+) -> FontParams | FreeTypeFont | None:
+    """Font parameter for getting font from renderer.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param int font_size: fixture of font size.
+    :returns: None (default font), FontParams or font object.
+    """
+    match request.param:
+        case None:
+            # Use font_size fixture in test to load font with this size as
+            # default
+            return None
+        case 'font params':
+            font = ImageFont.truetype(
+                font=SETTINGS.paths.header_font,
+                size=font_size,
+            )
+            return FontParams.from_font(font=font)
+        case Path():
+            return ImageFont.truetype(font=request.param, size=font_size)
+        case _:
+            msg = f'Case with parameter {request.param} not implemented'
+            raise NotImplementedError(msg)

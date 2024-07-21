@@ -27,6 +27,13 @@ class TestPlaceholderMapping:
         """
         pytest.skip(reason='Not implemented')
 
+    def test_clear(self: Self) -> None:
+        """Test clearing mapping.
+
+        :returns: None
+        """
+        pytest.skip(reason='Not implemented')
+
 
 class TestFontMapping:
     """Testing font mapping."""
@@ -61,6 +68,13 @@ class TestFontMapping:
 
     def test_load(self: Self) -> None:
         """Test loading font to mapping from file.
+
+        :returns: None
+        """
+        pytest.skip(reason='Not implemented')
+
+    def test_clear(self: Self) -> None:
+        """Test clearing mapping.
 
         :returns: None
         """

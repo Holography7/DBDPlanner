@@ -1,6 +1,5 @@
 from collections.abc import Sequence
-from pathlib import Path
-from typing import NamedTuple, Self, TypedDict
+from typing import NamedTuple, Self
 
 from pydantic import NonNegativeInt
 
@@ -186,10 +185,3 @@ class PlanCell(NamedTuple):
 
     row: NonNegativeInt
     column: NonNegativeInt
-
-
-class FontParams(TypedDict):
-    """TypedDict of params for loading fonts."""
-
-    font: Path
-    size: NonNegativeInt
