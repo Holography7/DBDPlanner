@@ -150,6 +150,13 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         :param FreeTypeFont item: font object.
         :returns: None
         """
+        if not item.font.family or not item.font.style:
+            # Real reason unknown, problem detected by mypy
+            msg = (
+                f'This font have empty family ({item.font.family}) or style '
+                f"({item.font.style}). It's dummy?"
+            )
+            raise ValueError(msg)
         family = item.font.family
         style = item.font.style
         size = item.size
@@ -189,6 +196,13 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         :param FreeTypeFont item: font that need to add or update to mapping.
         :returns: added or updated font with adding boolean flag.
         """
+        if not item.font.family or not item.font.style:
+            # Real reason unknown, problem detected by mypy
+            msg = (
+                f'This font have empty family ({item.font.family}) or style '
+                f"({item.font.style}). It's dummy?"
+            )
+            raise ValueError(msg)
         family = item.font.family
         style = item.font.style
         size = item.size

@@ -19,6 +19,13 @@ class FontParams:
         :param FreeTypeFont font: font object.
         :returns: FontParams dataclass.
         """
+        if not font.font.family or not font.font.style:
+            # Real reason unknown, problem detected by mypy
+            msg = (
+                f'This font have empty family ({font.font.family}) or style '
+                f"({font.font.style}). It's dummy?"
+            )
+            raise ValueError(msg)
         return cls(
             family=font.font.family,
             style=font.font.style,
