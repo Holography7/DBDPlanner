@@ -79,14 +79,13 @@ class CustomizationSettings(BaseModel):
 
         :returns: validated pydantic model.
         """
-        max_x_padding = self.cell_size.width // 2
-        max_y_padding = self.cell_size.height // 2
-        x_padding = self.cell_paddings.right + self.cell_paddings.left
-        y_padding = self.cell_paddings.top + self.cell_paddings.bottom
-        if x_padding >= max_x_padding or y_padding >= max_y_padding:
+        x_is_bigger = self.cell_paddings.x >= self.cell_size.width
+        y_is_bigger = self.cell_paddings.y >= self.cell_size.height
+        if x_is_bigger or y_is_bigger:
             msg = (
                 f'Paddings must be smaller than half of cell, but '
-                f'{(x_padding, y_padding)} >= {(max_x_padding, max_y_padding)}'
+                f'{(self.cell_paddings.x, self.cell_paddings.y)} >= '
+                f'{(self.cell_size.width, self.cell_size.height)}'
             )
             raise ValueError(msg)
         return self

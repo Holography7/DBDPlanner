@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from typing import Self
 
 import pytest
@@ -22,6 +21,22 @@ class TestBoxTuple:
 
         assert actual == expected
 
+    def test_create_square_with_not_integer(self: Self) -> None:
+        """Testing creating BoxTuple as square with not integer value.
+
+        :returns: None
+        """
+        with pytest.raises(TypeError):
+            _ = BoxTuple.create_square(size='s')
+
+    def test_create_square_with_negative_size(self: Self) -> None:
+        """Testing creating BoxTuple as square with negative size.
+
+        :returns: None
+        """
+        with pytest.raises(ValueError):
+            _ = BoxTuple.create_square(size=-1)
+
     @pytest.mark.parametrize(
         ('sequence', 'expected'),
         (
@@ -34,18 +49,45 @@ class TestBoxTuple:
     )
     def test_from_sequence(
         self: Self,
-        sequence: Sequence[int],
+        sequence: list[int] | tuple[int, ...],
         expected: BoxTuple,
     ) -> None:
-        """Testing creating BoxTuple from sequence with 1-4 elements.
+        """Testing creating BoxTuple from list or tuple with 1-4 elements.
 
-        :param Sequence[int] sequence: sequence with 1-4 elements.
+        :param list[int] | tuple[int, ...] sequence: list or tuple with 1-4
+         elements.
         :param BoxTuple expected: expected BoxTuple.
         :returns: None
         """
         actual = BoxTuple.from_sequence(sequence=sequence)
 
         assert actual == expected
+
+    def test_from_sequence_with_not_list_or_tuple(self: Self) -> None:
+        """Testing creating BoxTuple from not list or tuple.
+
+        :returns: None
+        """
+        with pytest.raises(TypeError):
+            _ = BoxTuple.from_sequence(sequence='s')  # type: ignore [arg-type]
+
+    @pytest.mark.parametrize(
+        'sequence',
+        ((), (5, 10, 15, 0, 6)),
+        ids=('Sequence with 0 elements', 'Sequence with 5 elements'),
+    )
+    def test_from_sequence_with_unexpected_size(
+        self: Self,
+        sequence: list[int] | tuple[int, ...],
+    ) -> None:
+        """Testing creating BoxTuple from list or tuple with unexpected size.
+
+        :param list[int] | tuple[int, ...] sequence: list or tuple with
+         unexpected size.
+        :returns: None
+        """
+        with pytest.raises(ValueError):
+            _ = BoxTuple.from_sequence(sequence=sequence)
 
     @pytest.mark.parametrize(
         ('value', 'expected'),
@@ -60,7 +102,7 @@ class TestBoxTuple:
     )
     def test_from_int_or_sequence(
         self: Self,
-        value: int | Sequence[int],
+        value: int | list[int] | tuple[int, ...],
         expected: BoxTuple,
     ) -> None:
         """Testing creating BoxTuple from sequence with 1-4 elements or int.
@@ -72,6 +114,16 @@ class TestBoxTuple:
         actual = BoxTuple.from_int_or_sequence(value=value)
 
         assert actual == expected
+
+    def test_from_int_or_sequence_with_unexpected_type(self: Self) -> None:
+        """Testing creating BoxTuple from sequence with unexpected type.
+
+        :returns: None
+        """
+        with pytest.raises(TypeError):
+            _ = BoxTuple.from_int_or_sequence(
+                value='s',
+            )
 
     def test_x(self: Self, box_tuple: BoxTuple) -> None:
         """Testing getting sum of x-axis values (left and right).

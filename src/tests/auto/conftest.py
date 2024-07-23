@@ -1,9 +1,11 @@
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from _pytest.fixtures import SubRequest
-from PIL import ImageFont
+from PIL import Image, ImageFont
 from PIL.ImageFont import FreeTypeFont
+from pytest_mock import MockFixture
 
 from src.dataclasses import FontParams
 from src.settings import SETTINGS
@@ -175,3 +177,67 @@ def font_param(
         case _:
             msg = f'Case with parameter {request.param} not implemented'
             raise NotImplementedError(msg)
+
+
+@pytest.fixture(
+    params=(300, SETTINGS.customization.cell_size_without_paddings),
+    ids=(
+        'Placeholder size 300',
+        'Placeholder size same as cell size without paddings',
+    ),
+)
+def mocked_placeholder(request: SubRequest, mocker: MockFixture) -> Mock:
+    """Fixture with mocked placeholder.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    placeholder = mocker.Mock(spec_set=Image.Image)
+    placeholder.size = request.param
+    return placeholder  # type: ignore [no-any-return]
+
+
+@pytest.fixture
+def resized_placeholder(mocker: MockFixture) -> Mock:
+    """Fixture with mocked resized placeholder.
+
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    placeholder = mocker.Mock(spec_set=Image.Image)
+    placeholder.size = SETTINGS.customization.cell_size_without_paddings
+    return placeholder  # type: ignore [no-any-return]
+
+
+@pytest.fixture
+def mocked_font(mocker: MockFixture) -> Mock:
+    """Fixture with mocked font.
+
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    font = mocker.Mock(spec=FreeTypeFont)  # spec_set not set "font" attribute
+    internal_font = mocker.Mock()  # No spec of internal font
+    internal_font.family = 'Test'
+    internal_font.style = '1'
+    font.font = internal_font
+    font.size = SETTINGS.customization.body_font_size
+    return font  # type: ignore [no-any-return]
+
+
+@pytest.fixture(params=('family', 'style', 'both'))
+def mocked_dummy_font(request: SubRequest, mocker: MockFixture) -> Mock:
+    """Fixture with mocked dummy font.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    font = mocker.Mock(spec=FreeTypeFont)  # spec_set not set "font" attribute
+    internal_font = mocker.Mock()  # No spec of internal font
+    internal_font.family = 'Test' if request.param == 'style' else None
+    internal_font.style = '1' if request.param == 'family' else None
+    font.font = internal_font
+    font.size = SETTINGS.customization.body_font_size
+    return font  # type: ignore [no-any-return]

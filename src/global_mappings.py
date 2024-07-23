@@ -15,13 +15,15 @@ from src.types import Size
 class BaseMapping(ABC, metaclass=SingletonABCMeta):
     """Base abstract class for all mappings."""
 
-    @property
     @abstractmethod
-    def _mapping(self: Self) -> dict:
-        """Mapping.
+    def __init__(self: Self) -> None:
+        """Initialize mapping.
 
-        :returns: mapping as dictionary.
+        Please don't use this abstract method and declare your own __init__
+        with code below.
+        :returns: None
         """
+        self.__mapping: dict = {}
         ...
 
     @abstractmethod
@@ -37,18 +39,28 @@ class BaseMapping(ABC, metaclass=SingletonABCMeta):
     def __getitem__(self: Self, key: Any) -> Any:  # noqa: ANN401
         """Get element by item.
 
-        :param Hashable key: key by which the value is stored.
+        :param Any key: key by which the value is stored.
         :returns: stored value.
         """
         ...
 
-    @classmethod
-    def clear(cls: type[Self]) -> None:
+    @abstractmethod
+    def __contains__(self: Self, item: Any) -> bool:  # noqa: ANN401
+        """Check that item in mapping.
+
+        :param Any item: any element that need to check that exists in mapping.
+        :returns: boolean.
+        """
+        ...
+
+    @abstractmethod
+    def clear(self: Self) -> None:
         """Clear mapping.
 
+        Just copy-paste this method to your classes and don't reuse it.
         :returns: None
         """
-        cls._mapping = {}  # type: ignore [method-assign, assignment]
+        self.__mapping = {}
 
 
 class GetOrAddABCMixin(ABC):
@@ -83,13 +95,19 @@ class AddOrUpdateMixin(ABC):
 class PlaceholderMapping(BaseMapping, GetOrAddABCMixin):
     """Singleton mapping of IDs original and images of resized placeholders."""
 
-    _mapping: ClassVar[dict[int, Image.Image]] = {}
     __resampling_method: ClassVar[Resampling] = (
         SETTINGS.customization.resampling_method
     )
     __resize_to: ClassVar[Size] = (
         SETTINGS.customization.cell_size_without_paddings
     )
+
+    def __init__(self: Self) -> None:
+        """Initialize mapping.
+
+        :returns: None
+        """
+        self.__mapping: dict[int, Image.Image] = {}
 
     def add(self: Self, item: Image.Image) -> None:
         """Add and resize placeholder to mapping.
@@ -98,13 +116,13 @@ class PlaceholderMapping(BaseMapping, GetOrAddABCMixin):
         :returns: None
         """
         image_id = id(item)
-        if image_id in self._mapping:
+        if image_id in self.__mapping:
             msg = 'This image already exists in mapping.'
             raise ValueError(msg)
         if item.size == self.__resize_to:
-            self._mapping[image_id] = item
+            self.__mapping[image_id] = item
         else:
-            self._mapping[image_id] = ImageOps.contain(
+            self.__mapping[image_id] = ImageOps.contain(
                 image=item,
                 # PyCharm bad works with NamedTuple
                 size=self.__resize_to,
@@ -120,7 +138,16 @@ class PlaceholderMapping(BaseMapping, GetOrAddABCMixin):
         if not isinstance(key, int) or key < 0:
             msg = 'Index must be positive integer.'
             raise TypeError(msg)
-        return self._mapping[key]
+        return self.__mapping[key]
+
+    def __contains__(self: Self, item: Image.Image) -> bool:
+        """Check that placeholder in mapping.
+
+        :param Image.Image item: placeholder that need to check that exists in
+         mapping.
+        :returns: boolean.
+        """
+        return id(item) in self.__mapping
 
     def get_or_add(self: Self, item: Image.Image) -> tuple[Image.Image, bool]:
         """Get or add resized placeholder by original object."""
@@ -130,6 +157,13 @@ class PlaceholderMapping(BaseMapping, GetOrAddABCMixin):
         except KeyError:
             self.add(item=item)
         return self[image_id], True
+
+    def clear(self: Self) -> None:
+        """Clear mapping.
+
+        :returns: None
+        """
+        self.__mapping = {}
 
 
 class FontMapping(BaseMapping, AddOrUpdateMixin):
@@ -141,8 +175,13 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
      3. Font size.
     """
 
-    _mapping: ClassVar[dict[str, dict[str, dict[float, FreeTypeFont]]]] = {}
-    __path_mapping: ClassVar[dict[Path, dict[int, FreeTypeFont]]] = {}
+    def __init__(self: Self) -> None:
+        """Initialize mapping.
+
+        :returns: None
+        """
+        self.__mapping: dict[str, dict[str, dict[float, FreeTypeFont]]] = {}
+        self.__path_mapping: dict[Path, dict[int, FreeTypeFont]] = {}
 
     def add(self: Self, item: FreeTypeFont) -> None:
         """Add font to mapping.
@@ -160,16 +199,16 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         family = item.font.family
         style = item.font.style
         size = item.size
-        if family in self._mapping:
-            if style in self._mapping[family]:
-                if size in self._mapping[family][style]:
+        if family in self.__mapping:
+            if style in self.__mapping[family]:
+                if size in self.__mapping[family][style]:
                     msg = 'This font already exists in mapping.'
                     raise ValueError(msg)
-                self._mapping[family][style][size] = item
+                self.__mapping[family][style][size] = item
             else:
-                self._mapping[family][style] = {size: item}
+                self.__mapping[family][style] = {size: item}
         else:
-            self._mapping[family] = {style: {size: item}}
+            self.__mapping[family] = {style: {size: item}}
 
     def __getitem__(
         self: Self,
@@ -185,7 +224,24 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         if not isinstance(key, str):
             msg = 'Font family must be a string.'
             raise TypeError(msg)
-        return self._mapping[key]
+        return self.__mapping[key]
+
+    def __contains__(self: Self, font: FreeTypeFont | Path) -> bool:
+        """Check that font exists in mapping.
+
+        :param FreeTypeFont | Path font: font object or path to font.
+        :returns: boolean.
+        """
+        if isinstance(font, Path):
+            return font in self.__path_mapping
+        family = font.font.family
+        style = font.font.style
+        size = font.size
+        return (
+            family in self.__mapping
+            and style in self.__mapping[family]
+            and size in self.__mapping[family][style]
+        )
 
     def add_or_update(
         self: Self,
@@ -206,31 +262,16 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         family = item.font.family
         style = item.font.style
         size = item.size
-        font_exists = False
-        if family in self._mapping:
-            if style in self._mapping[family]:
-                font_exists = size in self._mapping[family][style]
-                self._mapping[family][style][size] = item
+        font_created = True
+        if family in self.__mapping:
+            if style in self.__mapping[family]:
+                font_created = size not in self.__mapping[family][style]
+                self.__mapping[family][style][size] = item
             else:
-                self._mapping[family][style] = {size: item}
+                self.__mapping[family][style] = {size: item}
         else:
-            self._mapping[family] = {style: {size: item}}
-        return item, font_exists
-
-    def is_font_exists(self: Self, font: FreeTypeFont) -> bool:
-        """Check that font exists in mapping.
-
-        :param FreeTypeFont font: font object.
-        :returns: boolean.
-        """
-        family = font.font.family
-        style = font.font.style
-        size = font.size
-        return (
-            family in self._mapping
-            and style in self._mapping[family]
-            and size in self._mapping[family][style]
-        )
+            self.__mapping[family] = {style: {size: item}}
+        return item, font_created
 
     def load(self: Self, path: Path, size: int) -> FreeTypeFont:
         """Load font from file and add to mapping.
@@ -256,11 +297,10 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         self.add_or_update(item=font)
         return font
 
-    @classmethod
-    def clear(cls: type[Self]) -> None:
+    def clear(self: Self) -> None:
         """Clear mapping.
 
         :returns: None
         """
-        super().clear()
-        cls.__path_mapping = {}
+        self.__mapping = {}
+        self.__path_mapping = {}

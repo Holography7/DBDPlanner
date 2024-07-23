@@ -237,10 +237,10 @@ class TestSettingsParser:
         :returns: None
         """
         data = deepcopy(self.DATA)
-        # you could run this test from not project root, so need change paths
+        # You could run this test from not project root, so need change paths
         # to pass path validation
         data['paths'] = correct_paths(initial=data['paths'])
-        # change format of some fields
+        # Change format of some fields
         if color_format == 'RGB':
             for color_field in self.COLOR_FIELDS:
                 rgb_value = self.RGB_COLORS[data['customization'][color_field]]
@@ -288,6 +288,70 @@ class TestSettingsParser:
             error.split(':', maxsplit=1)[0] for error in exc.value.errors
         }
         assert actual_errors == expected_errors
+
+    @pytest.mark.parametrize(
+        'cell_paddings',
+        (
+            [300, 0, 0, 0],
+            [0, 300, 0, 0],
+            [0, 0, 300, 0],
+            [0, 0, 0, 300],
+            [299, 0, 1, 0],
+            [0, 299, 0, 1],
+            [1, 0, 299, 0],
+            [0, 1, 0, 299],
+            150,
+            [150],
+            [150, 0],
+            [0, 150],
+            [300, 0, 0],
+            [0, 150, 0],
+            [0, 0, 300],
+            [299, 0, 1],
+            [1, 0, 299],
+        ),
+        ids=(
+            'Top is huge',
+            'Right is huge',
+            'Bottom is huge',
+            'Left is huge',
+            'Sum of Y is huge (top)',
+            'Sum of X is huge (right)',
+            'Sum of Y is huge (bottom)',
+            'Sum of X is huge (left)',
+            'Integer equal half cell size',
+            'List with 1 element equal half cell size',
+            'List with 2 elements, Y equal half cell size',
+            'List with 2 elements, X equal half cell size',
+            'List with 3 elements, top is huge',
+            'List with 3 elements, X equal half cell size',
+            'List with 3 elements, bottom is huge',
+            'List with 3 elements, Y is huge (top)',
+            'List with 3 elements, Y is huge (bottom)',
+        ),
+    )
+    def test_parse_huge_paddings(
+        self: Self,
+        cell_paddings: list[int] | int,
+    ) -> None:
+        """Test parsing settings from dict if paddings bigger than cell size.
+
+        :returns: None
+        """
+        data = deepcopy(self.DATA)
+        # You could run this test from not project root, so need change paths
+        # to pass path validation
+        data['paths'] = correct_paths(initial=data['paths'])
+        data['customization']['cell_paddings'] = cell_paddings
+        data['customization']['cell_size'] = (300, 300)
+
+        with pytest.raises(SettingsParsingError) as exc:
+            SettingsParser.parse_data(data=data)
+
+        actual_errors: set[str] = {
+            error.split(':', maxsplit=1)[0] for error in exc.value.errors
+        }
+        assert actual_errors == {'customization'}
 
     def test_load_settings_from_not_toml(self: Self) -> None:
         """Testing that method "load_settings_from_toml" raise exception.
