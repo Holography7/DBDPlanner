@@ -37,7 +37,7 @@ higher):
 - Linux, in most cases, already installed, but if it's not:
 
    ```commandline
-  apt install python
+  sudo apt install python
    ```
 
 Also for Linux, you must ensure that your installed Python have version 3.12 
@@ -171,7 +171,7 @@ Remember that type day before 13th day of any month, you get plan that starts
 in previous month. For example, date `2024-05-12` will creates plan on 
 April-May 2024, not May-June!
 
-    ## Settings
+## Settings
 
 You can customize plan using `settings.toml` file. It contains next settings:
 
@@ -189,6 +189,7 @@ You can customize plan using `settings.toml` file. It contains next settings:
 | plan_margins      | Size of margins from border of image to imaginary border of plan.      | Integer, list with 2, 3 or 4 integers | 50                                                |
 | cell_paddings     | Size of paddings from border of cell to placeholder image inside cell. | Integer, list with 2, 3 or 4 integers | \[0, 0\]                                          |
 | cell_size         | Size of cell in pixels                                                 | List with 2 integers                  | \[360, 360\]                                      |
+| resampling_method | Resampling method for resizing placeholder to place inside cells       | String (сase insensitive)             | "Lanczos"                                         |
 
 Little meanings for some types:
 - Any color setting could be set as list with 3 numbers of RGB colors from 0 to
@@ -196,8 +197,10 @@ Little meanings for some types:
 - Margins and paddings have similar definition in HTML: single number defines 
 margins or paddings from all sides, list with 2 integers - top + bottom and 
 left + right sides, 3 - top, left + right and bottom sides, 4 - top, right, 
-bottom and left sides
-- `cell_size` defines width and height
+bottom and left sides.
+- `cell_size` defines width and height.
+- Available values for `resampling_method`: nearest, box, bilinear, hamming,
+bicubic and lanczos.
 
 ## Developing
 

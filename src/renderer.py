@@ -2,12 +2,14 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import LiteralString, Self
 
-from PIL import Image, ImageDraw, ImageOps
-from PIL.Image import Resampling
+from PIL import Image, ImageDraw
 from PIL.ImageFont import FreeTypeFont
 
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
-from src.schemas import CustomizationSettings
+from src.dataclasses import FontParams
+from src.global_mappings import FontMapping, PlaceholderMapping
+from src.schemas import Settings
+from src.settings import SETTINGS
 from src.types import (
     BoxTuple,
     CoordinatesTuple,
@@ -24,7 +26,7 @@ class PlanRenderer:
     def __init__(
         self: Self,
         dimensions: Dimensions,
-        settings: CustomizationSettings,
+        settings: Settings = SETTINGS,
     ) -> None:
         """Initialize background image to render plan on it.
 
@@ -33,39 +35,88 @@ class PlanRenderer:
         :param Settings settings: pydantic model with settings.
         :returns: None
         """
-        self.settings = settings
-        self.dimensions = dimensions
-        self.allowable_placeholder_size: Size = Size(
-            width=settings.cell_size.width - settings.cell_paddings.x,
-            height=settings.cell_size.height - settings.cell_paddings.y,
+        # Initializing attributes
+        self.placeholder_mapping = PlaceholderMapping()
+        self.font_mapping = FontMapping()
+        self.header_font = self.font_mapping.load(
+            path=settings.paths.header_font,
+            size=settings.customization.header_font_size,
         )
-        plan_margins = settings.plan_margins
+        self.header_text_color = settings.customization.header_text_color
+        self.body_font = self.font_mapping.load(
+            path=settings.paths.body_font,
+            size=settings.customization.body_font_size,
+        )
+        self.body_text_color = settings.customization.body_text_color
+        self.dimensions = dimensions
+        self.cell_size = settings.customization.cell_size
+        self.plan_margins = settings.customization.plan_margins
+        self.cell_paddings = settings.customization.cell_paddings
+
+        # Creating image
         columns = dimensions.columns
         # plan must contain at least 1 row for header
         rows = dimensions.rows + 1
         image_size = Size(
-            width=settings.cell_size.width * columns + plan_margins.x,
-            height=settings.cell_size.height * rows + plan_margins.y,
+            width=self.cell_size.width * columns + self.plan_margins.x,
+            height=self.cell_size.height * rows + self.plan_margins.y,
         )
         self.image: Image.Image = Image.new(
             mode=PILLOW_MODE,
             # PyCharm bad works with NamedTuple
             size=image_size,
-            color=settings.background_color,
+            color=settings.customization.background_color,
         )
         self.draw: ImageDraw.ImageDraw = ImageDraw.Draw(self.image)
-        self.__placeholders_cache: dict[int, Image.Image] = {}
+
+    def get_font(
+        self: Self,
+        font: FontParams | FreeTypeFont | None = None,
+    ) -> FreeTypeFont:
+        """Get font.
+
+        If got FontParams, then try to get font from mapping (could raise
+        ValueError if this font not loaded. You should load it manually using
+        font_mapping attribute). If got FreeTypeFont, return this font, but add
+        it to font_mapping. If got None, then will use header font, loaded from
+        settings.
+        :param FontParams | FreeTypeFont | None font: font object.
+        :returns: font object
+        """
+        match font:
+            case None:
+                return self.header_font
+            case FreeTypeFont():
+                self.font_mapping.add_or_update(item=font)
+                return font
+            case FontParams():
+                family = font.family
+                style = font.style
+                size = font.size
+                try:
+                    return self.font_mapping[family][style][size]
+                except KeyError as exc:
+                    msg = f'Font {family} {style} with size {size} not found'
+                    raise ValueError(msg) from exc
+            case _:
+                msg = f'Unsupported type for getting font: {type(font)}'
+                raise TypeError(msg)
 
     def draw_header(
         self: Self,
         headers: Sequence[str],
-        font: FreeTypeFont,
+        font: FontParams | FreeTypeFont | None = None,
     ) -> None:
         """Draw header like in month calendar: Mon, Tue, Wed etc.
 
         :param Sequence[str] headers: sequence of text to draw in header. Count
          must be same as count columns that you specified in initialization.
-        :param FreeTypeFont font: font of headers.
+        :param FontParams | FreeTypeFont | None font: font of headers. If got
+        FontParams, then try to get font from mapping (could raise ValueError
+        if this font not loaded. You should load it manually using font_mapping
+        attribute). If got FreeTypeFont, then will use that font directly (
+        automatically add this font to font_mapping). If got None, then will
+        use header font, loaded from settings.
         :returns: None
         """
         if len(headers) != self.dimensions.columns:
@@ -74,6 +125,7 @@ class PlanRenderer:
                 f'{len(headers)}'
             )
             raise ValueError(msg)
+        font = self.get_font(font=font)
         for column, text in enumerate(headers):
             # first row is header always
             cell = PlanCell(row=0, column=column)
@@ -81,7 +133,7 @@ class PlanRenderer:
             self.draw_text_in_box(
                 text=text,
                 font=font,
-                color=self.settings.header_text_color,
+                color=self.header_text_color,
                 box=cell_box,
             )
 
@@ -89,7 +141,7 @@ class PlanRenderer:
         self: Self,
         elements: Sequence[str],
         placeholders: Sequence[Image.Image],
-        font: FreeTypeFont,
+        font: FontParams | FreeTypeFont | None = None,
         start_from_column: int = 0,
     ) -> None:
         """Draw plan.
@@ -105,7 +157,12 @@ class PlanRenderer:
          ID of original object. After caching, every time before change size of
          image, renderer will try to find already resized placeholder to save
          CPU time and reuse it.
-        :param FreeTypeFont font: font of elements.
+        :param FontParams | FreeTypeFont | None font: font of elements. If got
+         FontParams, then try to get font from mapping (could raise ValueError
+         if this font not loaded. You should load it manually using
+         font_mapping attribute). If got FreeTypeFont, then will use that font
+         directly (automatically add this font to font_mapping). If got None,
+         then will use body font, loaded from settings.
         :param int start_from_column: index of column of first row where need
          to start fill cells by elements and placeholders.
         :returns: None
@@ -117,6 +174,7 @@ class PlanRenderer:
         if start_from_column < 0 or start_from_column > columns:
             msg = f'Column index must be between 0 and {columns}.'
             raise ValueError(msg)
+        font = self.get_font(font=font)
         for element_num, placeholder in enumerate(placeholders):
             shifted_element_num = element_num + start_from_column
             cell = PlanCell(
@@ -124,10 +182,10 @@ class PlanRenderer:
                 row=(shifted_element_num // columns) + 1,
                 column=shifted_element_num % columns,
             )
-            placeholder_resized = self.__resize_placeholder(
-                placeholder=placeholder,
-            )
             cell_box = self.get_cell_box(cell=cell)
+            placeholder_resized, _ = self.placeholder_mapping.get_or_add(
+                item=placeholder,
+            )
             paste_to = self.get_coordinate_to_place_object_at_center(
                 box=cell_box,
                 object_size=Size(*placeholder_resized.size),
@@ -147,7 +205,7 @@ class PlanRenderer:
             self.draw_text_in_box(
                 text=elements[element_num],
                 font=font,
-                color=self.settings.body_text_color,
+                color=self.body_text_color,
                 box=placeholder_box,
             )
 
@@ -166,9 +224,9 @@ class PlanRenderer:
                 f'{cell.row}, column = {cell.column}, {self.dimensions})'
             )
             raise ValueError(msg)
-        cell_size = self.settings.cell_size
-        plan_margins = self.settings.plan_margins
-        cell_paddings = self.settings.cell_paddings
+        cell_size = self.cell_size
+        plan_margins = self.plan_margins
+        cell_paddings = self.cell_paddings
         top_no_padding = plan_margins.top + cell.row * cell_size.height
         left_bo_padding = plan_margins.left + cell.column * cell_size.width
         return BoxTuple(
@@ -177,36 +235,6 @@ class PlanRenderer:
             bottom=top_no_padding + cell_size.height - cell_paddings.bottom,
             left=left_bo_padding + cell_paddings.left,
         )
-
-    def __resize_placeholder(
-        self: Self,
-        placeholder: Image.Image,
-        resampling_method: Resampling = Resampling.LANCZOS,
-    ) -> Image.Image:
-        """Resize placeholder to place into cell.
-
-        This method using placeholders cache, that stores resized placeholders
-        with ID original object as key, so if you try resize Image object that
-        was cached, it will not try resize it again and return cached
-        placeholder. Also, it will not resize image if it's size is same as
-        allowable_placeholder_size.
-        :param Image.Image placeholder: placeholder image object.
-        :param Resampling resampling_method: Pillow's resampling method.
-        :returns: resized placeholder image object.
-        """
-        image_id = id(placeholder)
-        if image_id in self.__placeholders_cache:
-            return self.__placeholders_cache[image_id]
-        if placeholder.size == self.allowable_placeholder_size:
-            self.__placeholders_cache[image_id] = placeholder
-            return placeholder
-        self.__placeholders_cache[image_id] = ImageOps.contain(
-            image=placeholder,
-            # PyCharm bad works with NamedTuple
-            size=self.allowable_placeholder_size,
-            method=resampling_method,
-        )
-        return self.__placeholders_cache[image_id]
 
     @staticmethod
     def get_coordinate_to_place_object_at_center(

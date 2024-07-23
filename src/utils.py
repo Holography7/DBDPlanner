@@ -1,69 +1,61 @@
-from src.types import BoxTuple
+from pathlib import Path
 
 
-def transform_int_to_box_tuple(value: int) -> BoxTuple:
-    """Transform integer to BoxTuple instance.
+def is_ran_by_pytest() -> None:
+    """Check that this code ran from pytest.
 
-    :param int value: integer that will convert to BoxTuple (tuple with 4
-     elements).
-    :returns: BoxTuple.
+    Try to avoid using this function!
+    :returns: None, but raises if this code not ran from pytest.
     """
-    if value < 0:
-        msg = 'Value must be positive integer'
-        raise ValueError(msg)
-    return BoxTuple(top=value, right=value, bottom=value, left=value)
+    import sys
+
+    if 'pytest' not in sys.modules:
+        msg = (
+            'You are trying to run this project not from root directory. This '
+            'will broke some paths, so running from other directories not '
+            'allowed. Please run project from root directory.'
+        )
+        raise RuntimeError(msg)
 
 
-def transform_sequence_to_box_tuple(
-    value: list[int] | tuple[int, ...],
-) -> BoxTuple:
-    """Transform list or tuple to BoxTuple instance.
+def get_root() -> str:
+    """Get path to root if run test from subdirectories.
 
-    :param list[int] | tuple[int, ...] value: sequence that will convert to
-     BoxTuple (tuple with length 4 elements).
-    :returns: BoxTuple.
+    :returns: parent path.
     """
-    match len(value):
-        case 1:
-            return BoxTuple(
-                top=value[0],
-                right=value[0],
-                bottom=value[0],
-                left=value[0],
-            )
-        case 2:
-            return BoxTuple(
-                top=value[0],
-                right=value[1],
-                bottom=value[0],
-                left=value[1],
-            )
-        case 3:
-            return BoxTuple(
-                top=value[0],
-                right=value[1],
-                bottom=value[2],
-                left=value[1],
-            )
-        case 4:
-            return BoxTuple(*value)
+    match Path.cwd().name:
+        case 'src':
+            return '../'
+        case 'tests':
+            return '../../'
+        case 'auto':
+            return '../../../'
+        # means root directory
         case _:
-            msg = 'Value must be with 1-4 elements.'
-            raise ValueError(msg)
+            return ''
 
 
-def transform_to_box_tuple(
-    value: int | list[int] | tuple[int, ...],
-) -> BoxTuple:
-    """Transform integer or list/tuple to BoxTuple instance.
+def correct_path(initial: str) -> str:
+    """Get path for testing.
 
-    :param int | Sequence[int] value: integer or list/tuple with len from 1 to
-     4 that will convert to BoxTuple (tuple with 4 elements).
-    :returns: BoxTuple.
+    You could run tests from different places: project root, "tests"
+    directory (that could do PyCharm for example), "src" or "auto" (why
+    not?). Depends on it, paths must be different to pass path validation.
+    :param str initial: path.
+    :returns: dict with paths.
     """
-    if type(value) not in {int, list, tuple}:
-        msg = 'Value must be integer or list/tuple with 1-4 elements'
-        raise ValueError(msg)
-    if isinstance(value, int):
-        return transform_int_to_box_tuple(value=value)
-    return transform_sequence_to_box_tuple(value=value)
+    parent = get_root()
+    return f'{parent}{initial}'
+
+
+def correct_paths(initial: dict[str, str]) -> dict[str, str]:
+    """Get paths for testing.
+
+    You could run tests from different places: project root, "tests"
+    directory (that could do PyCharm for example), "src" or "auto" (why
+    not?). Depends on it, paths must be different to pass path validation.
+    :param dict[str, str] initial: dict with paths.
+    :returns: dict with paths.
+    """
+    parent = get_root()
+    return {name: f'{parent}{path}' for name, path in initial.items()}

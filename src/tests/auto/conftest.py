@@ -1,17 +1,25 @@
+from pathlib import Path
+from unittest.mock import Mock
+
 import pytest
 from _pytest.fixtures import SubRequest
+from PIL import Image, ImageFont
+from PIL.ImageFont import FreeTypeFont
+from pytest_mock import MockFixture
 
+from src.dataclasses import FontParams
+from src.settings import SETTINGS
 from src.types import BoxTuple, Dimensions, PlanCell, Size
-from src.utils import transform_to_box_tuple
 
 
 @pytest.fixture(
     params=(
-        (10, 20, 20, 10),
-        (0, 10, 10, 0),
-        (10, 100, 100, 10),
-        (5, 100, 65, 10),
+        (9, 9, 9, 9),
+        (0, 10, 0, 10),
+        (10, 99, 7, 99),
+        (5, 56, 65, 10),
     ),
+    ids=('(9,9)x(9,9)', '(0,10)x(0,10)', '(10,99)x(7,99)', '(5,56)x(65,10)'),
 )
 def box_tuple(request: SubRequest) -> BoxTuple:
     """BoxTuple.
@@ -85,7 +93,7 @@ def plan_margins(request: SubRequest) -> BoxTuple:
     :param SubRequest request: pytest request with fixture param.
     :returns: plan margins.
     """
-    return transform_to_box_tuple(value=request.param)
+    return BoxTuple.from_int_or_sequence(value=request.param)
 
 
 @pytest.fixture(
@@ -110,7 +118,7 @@ def cell_paddings(request: SubRequest) -> BoxTuple:
     :param SubRequest request: pytest request with fixture param.
     :returns: cell paddings.
     """
-    return transform_to_box_tuple(value=request.param)
+    return BoxTuple.from_int_or_sequence(value=request.param)
 
 
 @pytest.fixture(
@@ -124,3 +132,112 @@ def cell_size(request: SubRequest) -> Size:
     :returns: cell size.
     """
     return Size(*request.param)
+
+
+@pytest.fixture(
+    params=(1, 12, 72, 100, 1000),
+    ids=tuple(f'Font size {size}' for size in (1, 12, 72, 100, 1000)),
+)
+def font_size(request: SubRequest) -> int:
+    """Font size.
+
+    :param SubRequest request: pytest request with fixture param.
+    :returns: font size.
+    """
+    return request.param  # type: ignore [no-any-return]
+
+
+@pytest.fixture(
+    params=('font params', SETTINGS.paths.header_font, None),
+    ids=('Font params', 'Manually loaded font', 'Default font'),
+)
+def font_param(
+    request: SubRequest,
+    font_size: int,
+) -> FontParams | FreeTypeFont | None:
+    """Font parameter for getting font from renderer.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param int font_size: fixture of font size.
+    :returns: None (default font), FontParams or font object.
+    """
+    match request.param:
+        case None:
+            # Use font_size fixture in test to load font with this size as
+            # default
+            return None
+        case 'font params':
+            font = ImageFont.truetype(
+                font=SETTINGS.paths.header_font,
+                size=font_size,
+            )
+            return FontParams.from_font(font=font)
+        case Path():
+            return ImageFont.truetype(font=request.param, size=font_size)
+        case _:
+            msg = f'Case with parameter {request.param} not implemented'
+            raise NotImplementedError(msg)
+
+
+@pytest.fixture(
+    params=(300, SETTINGS.customization.cell_size_without_paddings),
+    ids=(
+        'Placeholder size 300',
+        'Placeholder size same as cell size without paddings',
+    ),
+)
+def mocked_placeholder(request: SubRequest, mocker: MockFixture) -> Mock:
+    """Fixture with mocked placeholder.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    placeholder = mocker.Mock(spec_set=Image.Image)
+    placeholder.size = request.param
+    return placeholder  # type: ignore [no-any-return]
+
+
+@pytest.fixture
+def resized_placeholder(mocker: MockFixture) -> Mock:
+    """Fixture with mocked resized placeholder.
+
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    placeholder = mocker.Mock(spec_set=Image.Image)
+    placeholder.size = SETTINGS.customization.cell_size_without_paddings
+    return placeholder  # type: ignore [no-any-return]
+
+
+@pytest.fixture
+def mocked_font(mocker: MockFixture) -> Mock:
+    """Fixture with mocked font.
+
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    font = mocker.Mock(spec=FreeTypeFont)  # spec_set not set "font" attribute
+    internal_font = mocker.Mock()  # No spec of internal font
+    internal_font.family = 'Test'
+    internal_font.style = '1'
+    font.font = internal_font
+    font.size = SETTINGS.customization.body_font_size
+    return font  # type: ignore [no-any-return]
+
+
+@pytest.fixture(params=('family', 'style', 'both'))
+def mocked_dummy_font(request: SubRequest, mocker: MockFixture) -> Mock:
+    """Fixture with mocked dummy font.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param MockFixture mocker: fixture of mock module.
+    :returns: Mock object with required attributes for tests.
+    """
+    font = mocker.Mock(spec=FreeTypeFont)  # spec_set not set "font" attribute
+    internal_font = mocker.Mock()  # No spec of internal font
+    internal_font.family = 'Test' if request.param == 'style' else None
+    internal_font.style = '1' if request.param == 'family' else None
+    font.font = internal_font
+    font.size = SETTINGS.customization.body_font_size
+    return font  # type: ignore [no-any-return]

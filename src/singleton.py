@@ -1,8 +1,9 @@
+from abc import ABCMeta
 from typing import Any, ClassVar
 
 
-class Singleton(type):
-    """Singleton metaclass for stuff that could use lot memory or CPU bound.
+class SingletonABCMeta(ABCMeta):
+    """Singleton abstract metaclass for stuff that could use lot memory or CPU.
 
     Do not use this metaclass to just make some stuff the single source!
     """

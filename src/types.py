@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import NamedTuple, Self, TypedDict
+from typing import NamedTuple, Self
 
 from pydantic import NonNegativeInt
 
@@ -44,6 +43,91 @@ class BoxTuple(NamedTuple):
     right: NonNegativeInt
     bottom: NonNegativeInt
     left: NonNegativeInt
+
+    @classmethod
+    def create_square(cls: type[Self], size: NonNegativeInt) -> Self:
+        """Create instance as square (box with sides with same size).
+
+        :param NonNegativeInt size: size of all sides of box.
+        :returns: BoxTuple with same size of sides.
+        """
+        if not isinstance(size, int):
+            msg = 'Value must be integer.'
+            raise TypeError(msg)
+        if size < 0:
+            msg = 'Value must be positive integer'
+            raise ValueError(msg)
+        return cls(top=size, right=size, bottom=size, left=size)
+
+    # Cannot escape here from C901
+    @classmethod
+    def from_sequence(  # noqa: C901
+        cls: type[Self],
+        sequence: list[NonNegativeInt] | tuple[NonNegativeInt, ...],
+    ) -> Self:
+        """Create instance from list or tuple with 1-4 elements.
+
+        It will place values like it do HTML:
+        1 element - all sides (square).
+        2 elements - first for top and bottom, second for left and right.
+        3 elements - first for top, second for left and right, third for
+         bottom.
+        4 elements - top, right, bottom and left respectively.
+        :param list[NonNegativeInt] | tuple[NonNegativeInt, ...] sequence: list
+        or tuple that will convert to box. Must be with 1-4 elements.
+        :returns: BoxTuple with same size of sides.
+        """
+        if type(sequence) not in {list, tuple}:
+            msg = 'Value must be list/tuple with 1-4 elements.'
+            raise TypeError(msg)
+        match len(sequence):
+            case 1:
+                return cls.create_square(size=sequence[0])
+            case 2:
+                return cls(
+                    top=sequence[0],
+                    right=sequence[1],
+                    bottom=sequence[0],
+                    left=sequence[1],
+                )
+            case 3:
+                return cls(
+                    top=sequence[0],
+                    right=sequence[1],
+                    bottom=sequence[2],
+                    left=sequence[1],
+                )
+            case 4:
+                return cls(*sequence)
+            case _:
+                msg = 'Value must be with 1-4 elements.'
+                raise ValueError(msg)
+
+    @classmethod
+    def from_int_or_sequence(
+        cls: type[Self],
+        value: (
+            NonNegativeInt | list[NonNegativeInt] | tuple[NonNegativeInt, ...]
+        ),
+    ) -> Self:
+        """Create instance from integer or sequence with 1-4 elements.
+
+        If got integer or sequence with 1 element, returns box as square.
+        If got sequence with 2-4 elements, it will place values like in HTML:
+        2 elements - first for top and bottom, second for left and right.
+        3 elements - first for top, second for left and right, third for
+         bottom.
+        4 elements - top, right, bottom and left respectively.
+        :param int | list[int] | tuple[int, ...] value: integer, list or tuple
+         that will convert to box. List or tuple must be with 1-4 elements.
+        :returns: BoxTuple with same size of sides.
+        """
+        if type(value) not in {int, list, tuple}:
+            msg = 'Value must be integer or list/tuple with 1-4 elements'
+            raise TypeError(msg)
+        if isinstance(value, int):
+            return cls.create_square(size=value)
+        return cls.from_sequence(sequence=value)
 
     @property
     def x(self: Self) -> NonNegativeInt:
@@ -109,10 +193,3 @@ class PlanCell(NamedTuple):
 
     row: NonNegativeInt
     column: NonNegativeInt
-
-
-class FontParams(TypedDict):
-    """TypedDict of params for loading fonts."""
-
-    font: Path
-    size: NonNegativeInt

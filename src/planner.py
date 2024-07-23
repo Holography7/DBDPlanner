@@ -8,7 +8,6 @@ from PIL import Image
 
 from src.constants import DAY_WHEN_PERIOD_CHANGES
 from src.enums import Grade, WeekdayShort
-from src.font_library import FontLibrary
 from src.renderer import PlanRenderer
 from src.schemas import Settings
 from src.settings import SETTINGS
@@ -82,17 +81,11 @@ class DBDPlanner:
         rows = math.ceil((len(elements) + first_day) / columns)
         dimensions = Dimensions(rows=rows, columns=columns)
         headers = tuple(weekday.value for weekday in WeekdayShort)
-        header_font = FontLibrary()[self.settings.paths.header_font.stem]
-        body_font = FontLibrary()[self.settings.paths.body_font.stem]
-        renderer = PlanRenderer(
-            dimensions=dimensions,
-            settings=self.settings.customization,
-        )
-        renderer.draw_header(headers=headers, font=header_font)
+        renderer = PlanRenderer(dimensions=dimensions, settings=self.settings)
+        renderer.draw_header(headers=headers)
         renderer.draw_plan(
             elements=elements,
             placeholders=placeholders,
-            font=body_font,
             start_from_column=first_day,
         )
         months_str = f'{current_month_name}-{next_month_name}'

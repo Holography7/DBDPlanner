@@ -11,6 +11,7 @@ from src.exceptions import SettingsParsingError
 from src.settings_parser import SettingsParser
 from src.tests.utils import product_str
 from src.types import BoxTuple, RGBColor, Size
+from src.utils import correct_paths
 
 
 class TestSettingsParser:
@@ -36,6 +37,7 @@ class TestSettingsParser:
             # cell size for x and y.
             'cell_paddings': [20, 40, 70, 30],
             'cell_size': [360, 360],
+            'resampling_method': 'Lanczos',
         },
     }
     WRONG_DATA: ClassVar[dict[str, dict[str, Any]]] = {
@@ -54,6 +56,7 @@ class TestSettingsParser:
             'plan_margins': [-1, -2, -3, -4],
             'cell_paddings': [-1, -2, -3, -4],
             'cell_size': [-5, -6],
+            'resampling_method': 'wrong',
         },
     }
     ERRORS: ClassVar[set[str]] = {
@@ -79,6 +82,7 @@ class TestSettingsParser:
         'customization.cell_paddings.3',
         'customization.cell_size.0',
         'customization.cell_size.1',
+        'customization.resampling_method',
     }
     RGB_COLORS: ClassVar[dict[str, Sequence[int]]] = {
         StrColor.WHITE: [255, 255, 255],
@@ -94,27 +98,6 @@ class TestSettingsParser:
         'plan_margins',
         'cell_paddings',
     )
-
-    @staticmethod
-    def get_paths(initial: dict[str, str]) -> dict[str, str]:
-        """Get paths for testing.
-
-        You could run tests from different places: project root, "tests"
-        directory (that could do PyCharm for example), "src" or "auto" (why
-        not?). Depends on it, paths must be different to pass path validation.
-        :returns: dict with strings of paths.
-        """
-        match Path.cwd().name:
-            case 'src':
-                parent = '../'
-            case 'tests':
-                parent = '../../'
-            case 'auto':
-                parent = '../../../'
-            # means root directory
-            case _:
-                return initial
-        return {key: f'{parent}{value}' for key, value in initial.items()}
 
     def set_box_values(
         self: Self,
@@ -254,10 +237,10 @@ class TestSettingsParser:
         :returns: None
         """
         data = deepcopy(self.DATA)
-        # you could run this test from not project root, so need change paths
+        # You could run this test from not project root, so need change paths
         # to pass path validation
-        data['paths'] = self.get_paths(initial=data['paths'])
-        # change format of some fields
+        data['paths'] = correct_paths(initial=data['paths'])
+        # Change format of some fields
         if color_format == 'RGB':
             for color_field in self.COLOR_FIELDS:
                 rgb_value = self.RGB_COLORS[data['customization'][color_field]]
@@ -305,6 +288,70 @@ class TestSettingsParser:
             error.split(':', maxsplit=1)[0] for error in exc.value.errors
         }
         assert actual_errors == expected_errors
+
+    @pytest.mark.parametrize(
+        'cell_paddings',
+        (
+            [300, 0, 0, 0],
+            [0, 300, 0, 0],
+            [0, 0, 300, 0],
+            [0, 0, 0, 300],
+            [299, 0, 1, 0],
+            [0, 299, 0, 1],
+            [1, 0, 299, 0],
+            [0, 1, 0, 299],
+            150,
+            [150],
+            [150, 0],
+            [0, 150],
+            [300, 0, 0],
+            [0, 150, 0],
+            [0, 0, 300],
+            [299, 0, 1],
+            [1, 0, 299],
+        ),
+        ids=(
+            'Top is huge',
+            'Right is huge',
+            'Bottom is huge',
+            'Left is huge',
+            'Sum of Y is huge (top)',
+            'Sum of X is huge (right)',
+            'Sum of Y is huge (bottom)',
+            'Sum of X is huge (left)',
+            'Integer equal half cell size',
+            'List with 1 element equal half cell size',
+            'List with 2 elements, Y equal half cell size',
+            'List with 2 elements, X equal half cell size',
+            'List with 3 elements, top is huge',
+            'List with 3 elements, X equal half cell size',
+            'List with 3 elements, bottom is huge',
+            'List with 3 elements, Y is huge (top)',
+            'List with 3 elements, Y is huge (bottom)',
+        ),
+    )
+    def test_parse_huge_paddings(
+        self: Self,
+        cell_paddings: list[int] | int,
+    ) -> None:
+        """Test parsing settings from dict if paddings bigger than cell size.
+
+        :returns: None
+        """
+        data = deepcopy(self.DATA)
+        # You could run this test from not project root, so need change paths
+        # to pass path validation
+        data['paths'] = correct_paths(initial=data['paths'])
+        data['customization']['cell_paddings'] = cell_paddings
+        data['customization']['cell_size'] = (300, 300)
+
+        with pytest.raises(SettingsParsingError) as exc:
+            SettingsParser.parse_data(data=data)
+
+        actual_errors: set[str] = {
+            error.split(':', maxsplit=1)[0] for error in exc.value.errors
+        }
+        assert actual_errors == {'customization'}
 
     def test_load_settings_from_not_toml(self: Self) -> None:
         """Testing that method "load_settings_from_toml" raise exception.
