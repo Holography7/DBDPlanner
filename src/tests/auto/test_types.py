@@ -27,7 +27,7 @@ class TestBoxTuple:
         :returns: None
         """
         with pytest.raises(TypeError):
-            _ = BoxTuple.create_square(size='s')
+            _ = BoxTuple.create_square(size='s')  # type: ignore [arg-type]
 
     def test_create_square_with_negative_size(self: Self) -> None:
         """Testing creating BoxTuple as square with negative size.
@@ -122,7 +122,7 @@ class TestBoxTuple:
         """
         with pytest.raises(TypeError):
             _ = BoxTuple.from_int_or_sequence(
-                value='s',
+                value='s',  # type: ignore [arg-type]
             )
 
     def test_x(self: Self, box_tuple: BoxTuple) -> None:

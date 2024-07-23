@@ -4,12 +4,22 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.0
-    hooks:
-      - id: mypy
+#  temporary comment and using local mypy hook
+#  - repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: v1.11.0
+#    hooks:
+#      - id: mypy
   - repo: local
     hooks:
+      - id: mypy
+        name: mypy check
+        verbose: true
+        language: system
+        stages: [ commit ]
+        entry: mypy .
+        require_serial: true
+        always_run: true
+        pass_filenames: false
       - id: tests
         name: run tests
         verbose: true
