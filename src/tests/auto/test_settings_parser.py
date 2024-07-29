@@ -6,6 +6,7 @@ from typing import Any, ClassVar, Literal, Self
 
 import pytest
 
+from src.constants import SETTINGS_FILE_PATH
 from src.enums import StrColor
 from src.exceptions import SettingsParsingError
 from src.settings_parser import SettingsParser
@@ -290,26 +291,26 @@ class TestSettingsParser:
         assert actual_errors == expected_errors
 
     @pytest.mark.parametrize(
-        'cell_paddings',
-        (
-            [300, 0, 0, 0],
-            [0, 300, 0, 0],
-            [0, 0, 300, 0],
-            [0, 0, 0, 300],
-            [299, 0, 1, 0],
-            [0, 299, 0, 1],
-            [1, 0, 299, 0],
-            [0, 1, 0, 299],
+        'cell_paddings_raw',
+        [
+            (300, 0, 0, 0),
+            (0, 300, 0, 0),
+            (0, 0, 300, 0),
+            (0, 0, 0, 300),
+            (299, 0, 1, 0),
+            (0, 299, 0, 1),
+            (1, 0, 299, 0),
+            (0, 1, 0, 299),
             150,
-            [150],
-            [150, 0],
-            [0, 150],
-            [300, 0, 0],
-            [0, 150, 0],
-            [0, 0, 300],
-            [299, 0, 1],
-            [1, 0, 299],
-        ),
+            (150,),
+            (150, 0),
+            (0, 150),
+            (300, 0, 0),
+            (0, 150, 0),
+            (0, 0, 300),
+            (299, 0, 1),
+            (1, 0, 299),
+        ],
         ids=(
             'Top is huge',
             'Right is huge',
@@ -332,17 +333,19 @@ class TestSettingsParser:
     )
     def test_parse_huge_paddings(
         self: Self,
-        cell_paddings: list[int] | int,
+        cell_paddings_raw: list[int] | int,
     ) -> None:
         """Test parsing settings from dict if paddings bigger than cell size.
 
+        :param list[int] | int cell_paddings_raw: parameter with raw cell
+         paddings.
         :returns: None
         """
         data = deepcopy(self.DATA)
         # You could run this test from not project root, so need change paths
         # to pass path validation
         data['paths'] = correct_paths(initial=data['paths'])
-        data['customization']['cell_paddings'] = cell_paddings
+        data['customization']['cell_paddings'] = cell_paddings_raw
         data['customization']['cell_size'] = (300, 300)
 
         with pytest.raises(SettingsParsingError) as exc:
@@ -359,5 +362,10 @@ class TestSettingsParser:
         It raises when setting file is not toml extension.
         :returns: None
         """
-        with pytest.raises(ValueError):
+        expected_msg = (
+            f'Settings file must be with "{SETTINGS_FILE_PATH.suffix}" '
+            f'extension.'
+        )
+
+        with pytest.raises(ValueError, match=expected_msg):
             SettingsParser.load_settings_from_toml(path=Path('not_toml.txt'))
