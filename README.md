@@ -212,9 +212,9 @@ pip install -r dev_tools.txt
 uv pip install -r dev_tools.txt
 ```
 
-It contains `ruff` linter and formatter, `mypy` type checker and `pre-commit` 
-hook. You can install pre-commit hook to run `ruff` and `mypy` every time
-before commit:
+It contains `ruff` linter and formatter, `mypy` type checker, `pre-commit` 
+hook and `pytest` with plugins for testing code. You can install pre-commit
+hook to run `ruff`, `mypy` and `pytest` every time before commit:
 
 ```commandline
 pre-commit install
@@ -225,7 +225,10 @@ Or, run them manually:
 ruff check
 ruff format
 mypy .
+pytest -m "not integration" --cov-config=pyproject.toml --cov=. --cov-report=term-missing
 ```
+
+To learn more about testing, read [testing chapter](#testing).
 
 ## Testing
 
@@ -235,7 +238,63 @@ available tests. You can also use `--help` after every available test to see
 options. All test results stores in `src/tests/manual_test_results`. Also you 
 can see what this tests do in `src/tests/manual.py`.
 
-Auto tests will come someday...
+Adding auto tests in progress, but they not coverage all code yet, so they are
+not marked as complete in roadmap. However, you can run them, but first, you
+must install test tools. To install them, use one of this command:
+
+```commandline
+pip install -r test_tools.txt
+uv pip install -r test_tools.txt
+```
+
+It contains `pytest` with plugins. After this, you can run tests by command in
+root directory:
+
+```commandline
+pytest
+```
+
+However, some tests have too many parameters, that could force you
+wait too long. To run only unit tests, use next command:
+
+```commandline
+pytest -m "not integration"
+```
+
+Also, if your CPU is slow, but have many cores, you can run tests in multicore
+mode:
+
+```commandline
+pytest -n auto
+```
+
+`auto` will use all your CPU threads. If you want use certain count of threads,
+replace it by number of threads that you want, for example, to run tests on 4
+threads:
+
+```commandline
+pytest -n 4
+```
+
+Also, you can check test coverage using command:
+
+```commandline
+pytest --cov-config=pyproject.toml --cov=. --cov-report=term-missing
+```
+
+Learn more about coverage parameters from
+[pytest-cov plugin docs](https://pytest-cov.readthedocs.io/en/latest/).
+
+If you want to write or change some test, then you must install developer
+tools:
+
+```commandline
+pip install -r dev_tools.txt
+uv pip install -r dev_tools.txt
+```
+
+That requires to check your code by `ruff` linter and `mypy` type checker. To
+learn more about them, read [developing chapter](#developing).
 
 ## Roadmap
 

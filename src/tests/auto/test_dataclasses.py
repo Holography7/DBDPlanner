@@ -1,3 +1,4 @@
+import re
 from typing import Self
 from unittest.mock import Mock
 
@@ -27,5 +28,10 @@ class TestFontParams:
         :param Mock mocked_dummy_font: fixture with mocked dummy font.
         :returns: None
         """
-        with pytest.raises(ValueError):
+        expected_msg = re.escape(
+            f'This font have empty family ({mocked_dummy_font.font.family}) '
+            f"or style ({mocked_dummy_font.font.style}). It's dummy?",
+        )
+
+        with pytest.raises(ValueError, match=expected_msg):
             _ = FontParams.from_font(font=mocked_dummy_font)

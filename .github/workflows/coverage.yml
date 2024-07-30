@@ -24,10 +24,10 @@ jobs:
           pip install uv
           uv pip install --all-extras -r pyproject.toml --system
       - name: Run auto tests
-        run: pytest --cov-config=pyproject.toml --cov=. --cov-report=json --cov-report=term-missing --cov-report=xml
+        run: pytest -n auto --cov-config=pyproject.toml --cov=. --cov-report=json --cov-report=term-missing --cov-report=xml
       - name: Code coverage
         uses: orgoro/coverage@v3.1
         with:
           coverageFile: coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          thresholdAll: 0.80
+          thresholdAll: 0.85

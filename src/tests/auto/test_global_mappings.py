@@ -1,3 +1,5 @@
+import re
+from copy import copy
 from pathlib import Path
 from typing import Literal, Self
 from unittest.mock import Mock
@@ -6,57 +8,68 @@ import pytest
 from PIL.ImageFont import FreeTypeFont
 from pytest_mock import MockFixture
 
+from src.constants import FONT_EXTENSION
 from src.global_mappings import FontMapping, PlaceholderMapping
+from src.settings import SETTINGS
 
 
 class TestPlaceholderMapping:
     """Testing placeholder mapping."""
 
+    @pytest.mark.usefixtures('_mock_image_contain')
     def test_add(
         self: Self,
         mocked_placeholder: Mock,
         resized_placeholder: Mock,
-        mocker: MockFixture,
     ) -> None:
         """Test adding placeholder to mapping.
 
         :param Mock mocked_placeholder: fixture with mocked placeholder.
         :param Mock resized_placeholder: fixture with mocked resized
          placeholder.
-        :param MockFixture mocker: fixture of mock module.
         :returns: None
         """
         mapping = PlaceholderMapping()
-        mocker.patch('PIL.ImageOps.contain', return_value=resized_placeholder)
-        if mocked_placeholder.size == resized_placeholder.size:
-            expected_placeholder = mocked_placeholder
-        else:
-            expected_placeholder = resized_placeholder
 
         mapping.add(item=mocked_placeholder)
 
-        assert mapping[id(mocked_placeholder)] == expected_placeholder
+        assert mapping[id(mocked_placeholder)] == resized_placeholder
         mapping.clear()
 
+    def test_add_placeholder_with_same_size_as_cell(
+        self: Self,
+        mocked_placeholder: Mock,
+    ) -> None:
+        """Test adding placeholder to mapping with same size as cell.
+
+        :param Mock mocked_placeholder: fixture with mocked placeholder.
+        :returns: None
+        """
+        mapping = PlaceholderMapping()
+        mocked_placeholder.size = (
+            SETTINGS.customization.cell_size_without_paddings
+        )
+
+        mapping.add(item=mocked_placeholder)
+
+        assert mapping[id(mocked_placeholder)] == mocked_placeholder
+        mapping.clear()
+
+    @pytest.mark.usefixtures('_mock_image_contain')
     def test_add_placeholder_already_exists(
         self: Self,
         mocked_placeholder: Mock,
-        resized_placeholder: Mock,
-        mocker: MockFixture,
     ) -> None:
         """Test adding placeholder to mapping that already exists.
 
         :param Mock mocked_placeholder: fixture with mocked placeholder.
-        :param Mock resized_placeholder: fixture with mocked resized
-         placeholder.
-        :param MockFixture mocker: fixture of mock module.
         :returns: None
         """
+        expected_msg = 'This image already exists in mapping.'
         mapping = PlaceholderMapping()
-        mocker.patch('PIL.ImageOps.contain', return_value=resized_placeholder)
         mapping.add(item=mocked_placeholder)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_msg):
             mapping.add(item=mocked_placeholder)
 
         mapping.clear()
@@ -71,16 +84,16 @@ class TestPlaceholderMapping:
         with pytest.raises(TypeError):
             _ = mapping[-1]
 
+    @pytest.mark.usefixtures('_mock_image_contain')
     @pytest.mark.parametrize(
         'placeholder_already_exists',
-        (False, True),
+        [False, True],
         ids=('New placeholder', 'Placeholder already exists'),
     )
     def test_get_or_add(
         self: Self,
         mocked_placeholder: Mock,
         resized_placeholder: Mock,
-        mocker: MockFixture,
         *,  # Ruff don't let declare boolean position arguments
         placeholder_already_exists: bool,
     ) -> None:
@@ -89,44 +102,63 @@ class TestPlaceholderMapping:
         :param Mock mocked_placeholder: fixture with mocked placeholder.
         :param Mock resized_placeholder: fixture with mocked resized
          placeholder.
-        :param MockFixture mocker: fixture of mock module.
         :param bool placeholder_already_exists: parameter flag to add
          placeholder before testing method get_or_add.
         :returns: None
         """
         mapping = PlaceholderMapping()
-        mocker.patch('PIL.ImageOps.contain', return_value=resized_placeholder)
         if placeholder_already_exists:
             mapping.add(item=mocked_placeholder)
-        if mocked_placeholder.size == resized_placeholder.size:
-            expected_placeholder = mocked_placeholder
-        else:
-            expected_placeholder = resized_placeholder
 
         actual_placeholder, created = mapping.get_or_add(
             item=mocked_placeholder,
         )
 
-        assert actual_placeholder == expected_placeholder
+        assert actual_placeholder == resized_placeholder
         assert created != placeholder_already_exists
         mapping.clear()
 
-    def test_clear(
+    @pytest.mark.parametrize(
+        'placeholder_already_exists',
+        [False, True],
+        ids=('New placeholder', 'Placeholder already exists'),
+    )
+    def test_get_or_add_placeholder_with_same_size_as_cell(
         self: Self,
         mocked_placeholder: Mock,
-        resized_placeholder: Mock,
-        mocker: MockFixture,
+        *,  # Ruff don't let declare boolean position arguments
+        placeholder_already_exists: bool,
     ) -> None:
+        """Test getting or adding placeholder to mapping with cell size.
+
+        :param Mock mocked_placeholder: fixture with mocked placeholder.
+        :param bool placeholder_already_exists: parameter flag to add
+         placeholder before testing method get_or_add.
+        :returns: None
+        """
+        mocked_placeholder.size = (
+            SETTINGS.customization.cell_size_without_paddings
+        )
+        mapping = PlaceholderMapping()
+        if placeholder_already_exists:
+            mapping.add(item=mocked_placeholder)
+
+        actual_placeholder, created = mapping.get_or_add(
+            item=mocked_placeholder,
+        )
+
+        assert actual_placeholder == mocked_placeholder
+        assert created != placeholder_already_exists
+        mapping.clear()
+
+    @pytest.mark.usefixtures('_mock_image_contain')
+    def test_clear(self: Self, mocked_placeholder: Mock) -> None:
         """Test clearing mapping.
 
         :param Mock mocked_placeholder: fixture with mocked placeholder.
-        :param Mock resized_placeholder: fixture with mocked resized
-         placeholder.
-        :param MockFixture mocker: fixture of mock module.
         :returns: None
         """
         mapping = PlaceholderMapping()
-        mocker.patch('PIL.ImageOps.contain', return_value=resized_placeholder)
         mapping.add(item=mocked_placeholder)
 
         mapping.clear()
@@ -155,7 +187,7 @@ class TestFontMapping:
 
     @pytest.mark.parametrize(
         'exist_key',
-        ('family', 'style'),
+        ['family', 'style'],
         ids=(
             'Font with same family already exists',
             'Font with same family and style already exists',
@@ -202,10 +234,11 @@ class TestFontMapping:
         :param Mock mocked_font: fixture with mocked font.
         :returns: None
         """
+        expected_msg = 'This font already exists in mapping.'
         mapping = FontMapping()
         mapping.add(item=mocked_font)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_msg):
             mapping.add(item=mocked_font)
 
         mapping.clear()
@@ -216,9 +249,13 @@ class TestFontMapping:
         :param Mock mocked_dummy_font: fixture with mocked dummy font.
         :returns: None
         """
+        expected_msg = re.escape(
+            f'This font have empty family ({mocked_dummy_font.font.family}) '
+            f"or style ({mocked_dummy_font.font.style}). It's dummy?",
+        )
         mapping = FontMapping()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_msg):
             mapping.add(item=mocked_dummy_font)
 
     def test_getitem_not_str(self: Self) -> None:
@@ -226,14 +263,15 @@ class TestFontMapping:
 
         :returns: None
         """
+        expected_msg = 'Font family must be a string.'
         mapping = FontMapping()
 
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=expected_msg):
             _ = mapping[1]  # type: ignore [index]
 
     @pytest.mark.parametrize(
         'font_already_exists',
-        (False, True),
+        [False, True],
         ids=('New font', 'Font already exists'),
     )
     def test_add_or_update(
@@ -270,12 +308,12 @@ class TestFontMapping:
 
     @pytest.mark.parametrize(
         ('font_already_exists', 'exist_key'),
-        (
+        [
             (False, 'family'),
             (False, 'style'),
             (True, 'family'),
             (True, 'style'),
-        ),
+        ],
         ids=(
             'New font, family exists',
             'New font, family and style exists',
@@ -337,17 +375,44 @@ class TestFontMapping:
         :param Mock mocked_dummy_font: fixture with mocked dummy font.
         :returns: None
         """
+        expected_msg = re.escape(
+            f'This font have empty family ({mocked_dummy_font.font.family}) '
+            f"or style ({mocked_dummy_font.font.style}). It's dummy?",
+        )
         mapping = FontMapping()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_msg):
             mapping.add_or_update(item=mocked_dummy_font)
 
+    @pytest.mark.usefixtures('_mock_font_truetype')
     def test_load(
+        self: Self,
+        mocked_font: Mock,
+        mocked_font_path: Mock,
+    ) -> None:
+        """Test loading font to mapping from file.
+
+        :param Mock mocked_font: fixture with mocked font.
+        :param Mock mocked_font_path: fixture with mocked font path.
+        :returns: None
+        """
+        family = mocked_font.font.family
+        style = mocked_font.font.style
+        size = mocked_font.size
+        mapping = FontMapping()
+
+        mapping.load(path=mocked_font_path, size=mocked_font.size)
+
+        assert mapping[family][style][size] == mocked_font
+        assert mocked_font_path in mapping
+        mapping.clear()
+
+    def test_load_partial(
         self: Self,
         mocked_font: Mock,
         mocker: MockFixture,
     ) -> None:
-        """Test loading font to mapping from file.
+        """Test loading font to mapping from file with different size.
 
         :param Mock mocked_font: fixture with mocked font.
         :param MockFixture mocker: fixture of mock module.
@@ -356,14 +421,22 @@ class TestFontMapping:
         mocked_path = mocker.MagicMock(spec_set=Path)
         mocked_path.exists.return_value = True
         mocked_path.suffix = '.ttf'
-        mocker.patch('PIL.ImageFont.truetype', return_value=mocked_font)
+        mocked_font_other_size = copy(mocked_font)
+        # Make sure that size not equal with original mocked font
+        other_size = 300
+        mocked_font_other_size.size = other_size
+        truetype_path = 'PIL.ImageFont.truetype'
+        mocker.patch(truetype_path, return_value=mocked_font_other_size)
+        mapping = FontMapping()
+        mapping.load(path=mocked_path, size=other_size)
+        mocker.patch(truetype_path, return_value=mocked_font)
         family = mocked_font.font.family
         style = mocked_font.font.style
         size = mocked_font.size
-        mapping = FontMapping()
 
-        mapping.load(path=mocked_path, size=mocked_font.size)
+        mapping.load(path=mocked_path, size=size)
 
+        assert mapping[family][style][other_size] == mocked_font_other_size
         assert mapping[family][style][size] == mocked_font
         assert mocked_path in mapping
         mapping.clear()
@@ -376,9 +449,10 @@ class TestFontMapping:
         """
         mocked_path = mocker.MagicMock(spec_set=Path)
         mocked_path.exists.return_value = False
+        expected_msg = f'Font not found: {mocked_path}'
         mapping = FontMapping()
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileNotFoundError, match=expected_msg):
             mapping.load(path=mocked_path, size=1)
 
     def test_load_not_ttf(self: Self, mocker: MockFixture) -> None:
@@ -389,19 +463,30 @@ class TestFontMapping:
         """
         mocked_path = mocker.MagicMock(spec_set=Path)
         mocked_path.exists.return_value = True
+        expected_msg = (
+            f'Only "{FONT_EXTENSION}" allowed, got {mocked_path.suffix}'
+        )
         mapping = FontMapping()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_msg):
             mapping.load(path=mocked_path, size=1)
 
-    def test_clear(self: Self, mocked_font: Mock) -> None:
+    @pytest.mark.usefixtures('_mock_font_truetype')
+    def test_clear(
+        self: Self,
+        mocked_font: Mock,
+        mocked_font_path: Mock,
+    ) -> None:
         """Test clearing mapping.
 
+        :param Mock mocked_font: fixture with mocked font.
+        :param Mock mocked_font_path: fixture with mocked font path.
         :returns: None
         """
         mapping = FontMapping()
-        mapping.add(item=mocked_font)
+        mapping.load(path=mocked_font_path, size=mocked_font.size)
 
         mapping.clear()
 
         assert mocked_font not in mapping
+        assert mocked_font_path not in mapping

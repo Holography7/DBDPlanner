@@ -7,6 +7,7 @@ from PIL.ImageFont import FreeTypeFont
 
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
 from src.dataclasses import FontParams
+from src.enums import StrColor
 from src.global_mappings import FontMapping, PlaceholderMapping
 from src.schemas import Settings
 from src.settings import SETTINGS
@@ -272,14 +273,14 @@ class PlanRenderer:
         self: Self,
         text: str,
         font: FreeTypeFont,
-        color: RGBColor | str,
+        color: RGBColor | StrColor,
         box: BoxTuple,
     ) -> None:
         """Drawing text in center of box.
 
         :param str text: text that needs to draw.
         :param FreeTypeFont font: text font.
-        :param RGBColor | str color: color of text in HTML word or RGB
+        :param RGBColor | StrColor color: color of text in HTML word or RGB
          sequence.
         :param BoxTuple box: coordinates of box.
         :returns: None

@@ -8,7 +8,11 @@ from src.types import BoxTuple, Size
 class TestBoxTuple:
     """Testing BoxTuple."""
 
-    @pytest.mark.parametrize('size', (0, 1, 5, 10, 15))
+    @pytest.mark.parametrize(
+        'size',
+        [0, 1, 5, 10, 15],
+        ids=tuple(f'Size {size}' for size in (0, 1, 5, 10, 15)),
+    )
     def test_create_square(self: Self, size: int) -> None:
         """Testing creating BoxTuple as square.
 
@@ -34,17 +38,19 @@ class TestBoxTuple:
 
         :returns: None
         """
-        with pytest.raises(ValueError):
+        expected_msg = 'Value must be positive integer'
+
+        with pytest.raises(ValueError, match=expected_msg):
             _ = BoxTuple.create_square(size=-1)
 
     @pytest.mark.parametrize(
         ('sequence', 'expected'),
-        (
+        [
             ((0,), BoxTuple(top=0, right=0, bottom=0, left=0)),
             ((1, 5), BoxTuple(top=1, right=5, bottom=1, left=5)),
             ((10, 15, 1), BoxTuple(top=10, right=15, bottom=1, left=15)),
             ((5, 10, 15, 0), BoxTuple(top=5, right=10, bottom=15, left=0)),
-        ),
+        ],
         ids=tuple(f'{count} element' for count in range(1, 5)),
     )
     def test_from_sequence(
@@ -68,12 +74,14 @@ class TestBoxTuple:
 
         :returns: None
         """
-        with pytest.raises(TypeError):
+        expected_msg = 'Value must be list/tuple with 1-4 elements.'
+
+        with pytest.raises(TypeError, match=expected_msg):
             _ = BoxTuple.from_sequence(sequence='s')  # type: ignore [arg-type]
 
     @pytest.mark.parametrize(
         'sequence',
-        ((), (5, 10, 15, 0, 6)),
+        [(), (5, 10, 15, 0, 6)],
         ids=('Sequence with 0 elements', 'Sequence with 5 elements'),
     )
     def test_from_sequence_with_unexpected_size(
@@ -86,18 +94,20 @@ class TestBoxTuple:
          unexpected size.
         :returns: None
         """
-        with pytest.raises(ValueError):
+        expected_msg = 'Value must be with 1-4 elements.'
+
+        with pytest.raises(ValueError, match=expected_msg):
             _ = BoxTuple.from_sequence(sequence=sequence)
 
     @pytest.mark.parametrize(
         ('value', 'expected'),
-        (
+        [
             (35, BoxTuple(top=35, right=35, bottom=35, left=35)),
             ((4,), BoxTuple(top=4, right=4, bottom=4, left=4)),
             ((7, 3), BoxTuple(top=7, right=3, bottom=7, left=3)),
             ((6, 2, 1), BoxTuple(top=6, right=2, bottom=1, left=2)),
             ((9, 10, 8, 0), BoxTuple(top=9, right=10, bottom=8, left=0)),
-        ),
+        ],
         ids=('Integer', *(f'{count} element' for count in range(1, 5))),
     )
     def test_from_int_or_sequence(
