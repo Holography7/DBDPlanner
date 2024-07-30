@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.2.30"]
+installer = ["uv==0.2.31"]
 dev_tools = [
     "cfgv==3.4.0",
     "distlib==0.3.8",

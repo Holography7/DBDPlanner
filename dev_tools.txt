@@ -94,7 +94,7 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.2.30
+uv==0.2.31
     # via dbdplanner (pyproject.toml)
 virtualenv==20.26.3
     # via
