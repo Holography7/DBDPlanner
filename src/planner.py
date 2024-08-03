@@ -65,7 +65,7 @@ class DBDPlanner:
         next_month_name = end_date.strftime('%B')
         periods = self.calculate_periods(
             count_periods=len(Grade),
-            deadline=self.count_days,
+            count_days=self.count_days,
         )
         elements = []
         placeholders = []
@@ -94,17 +94,17 @@ class DBDPlanner:
         logging.info('Generated plan on %s of %s.', months_str, self.year)
 
     @staticmethod
-    def calculate_periods(count_periods: int, deadline: int) -> list[int]:
+    def calculate_periods(count_periods: int, count_days: int) -> list[int]:
         """Calculate periods in days to upgrade to next grade.
 
         Each period in this sequence will higher on 1 day of previous, except
         last period that could be higher if left some days before deadline.
         :param int count_periods: count periods
-        :param int deadline: count days to upgrade to last grade.
+        :param int count_days: count days to upgrade to last grade.
         :returns: sequence of count days for each period
         """
         periods = list(range(1, count_periods + 1))
-        remain_days = deadline - sum(periods)
+        remain_days = count_days - sum(periods)
         each_period_increment, remain_days = divmod(remain_days, count_periods)
         for period_index in range(len(periods)):
             periods[period_index] += each_period_increment

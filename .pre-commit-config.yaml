@@ -1,25 +1,17 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.5
+    rev: v0.5.6
     hooks:
       - id: ruff
       - id: ruff-format
-#  temporary comment and using local mypy hook
-#  - repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v1.11.0
-#    hooks:
-#      - id: mypy
-  - repo: local
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.1
     hooks:
       - id: mypy
-        name: mypy check
-        verbose: true
-        language: system
-        stages: [ commit ]
-        entry: mypy .
-        require_serial: true
-        always_run: true
-        pass_filenames: false
+        args: [--config-file, pyproject.toml]
+        additional_dependencies: [Pillow==10.4.0, pydantic==2.8.2, click==8.1.7, pytest==8.3.2, pytest-mock==3.14.0]
+  - repo: local
+    hooks:
       - id: unit tests
         name: run unit tests
         verbose: true
@@ -34,7 +26,7 @@ repos:
         verbose: true
         language: system
         stages: [ commit ]
-        entry: python pre-commit.py coverage --expected-coverage 85 coverage.json
+        entry: python pre-commit.py coverage --expected-coverage 90 coverage.json
         require_serial: true
         always_run: true
         pass_filenames: false
