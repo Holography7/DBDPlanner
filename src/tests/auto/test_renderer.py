@@ -1,6 +1,6 @@
 import re
 from collections.abc import Sequence
-from typing import Literal, Self
+from typing import Self
 from unittest.mock import Mock
 
 import pytest
@@ -382,21 +382,13 @@ class TestPlanRenderer:
         '_mock_image_contain_to_allowable_cell_size',
         '_mock_image_paste',
     )
-    @pytest.mark.parametrize(
-        'start_from_column',
-        ['first', 'second', 'middle', 'last'],
-        ids=tuple(
-            f'Start drawing from {column} column'
-            for column in ('first', 'second', 'middle', 'last')
-        ),
-    )
     def test_draw_plan(
         self: Self,
         dimensions: Dimensions,
         mocked_placeholder: Mock,
         font_param: FontParams | Mock | None,
         mocked_renderer_settings: Settings,
-        start_from_column: Literal['first', 'second', 'middle', 'last'],
+        start_from_column: int,
     ) -> None:
         """Test drawing plan.
 
@@ -408,29 +400,14 @@ class TestPlanRenderer:
          parameter that will pass to method.
         :param Settings mocked_renderer_settings: fixture with mocked settings:
          paths to fonts, plan_margins, cell_paddings and cell_size.
-        :param Literal['first', 'second', 'middle', 'last'] start_from_column:
-         parameter that indicates from which column start drawing plan.
+        :param int start_from_column: fixture with column index where need to
+         start draw plan.
         :returns: None
         """
         placeholder_mapping = PlaceholderMapping()
         font_mapping = FontMapping()
-        match start_from_column:
-            case 'first':
-                start_from_column_num = 0
-            case 'second':
-                start_from_column_num = 1
-            case 'middle':
-                start_from_column_num = dimensions.columns // 2
-            case 'last':
-                start_from_column_num = dimensions.columns - 1
-            case _:
-                msg = (
-                    f'Case with start column from "{start_from_column}" not '
-                    f'implemented'
-                )
-                raise NotImplementedError(msg)
         max_elements = dimensions.rows * dimensions.columns
-        count_elements = max_elements - start_from_column_num
+        count_elements = max_elements - start_from_column
         elements = tuple(str(num) for num in range(count_elements))
         placeholders = tuple(mocked_placeholder for _ in range(count_elements))
         renderer = PlanRenderer(
@@ -442,7 +419,7 @@ class TestPlanRenderer:
             elements=elements,
             placeholders=placeholders,
             font=font_param,
-            start_from_column=start_from_column_num,
+            start_from_column=start_from_column,
         )
 
         placeholder_mapping.clear()

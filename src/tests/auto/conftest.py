@@ -439,3 +439,47 @@ def mocked_textbox_size(
         width=cell_size.width - cell_paddings.x - width_deductible,
         height=cell_size.height - cell_paddings.y - height_deductible,
     )
+
+
+@pytest.fixture(
+    params=('first', 'second', 'middle', 'last'),
+    ids=tuple(
+        f'Start drawing from {column} column'
+        for column in ('first', 'second', 'middle', 'last')
+    ),
+)
+def start_from_column(request: SubRequest, dimensions: Dimensions) -> int:
+    """Fixture with index column where start draw first row.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param Dimensions dimensions: fixture of dimensions of plan.
+    :returns: index column where start draw first row.
+    """
+    match request.param:
+        case 'first':
+            return 0
+        case 'second':
+            return 1
+        case 'middle':
+            return dimensions.columns // 2
+        case 'last':
+            return dimensions.columns - 1
+        case _:
+            msg = (
+                f'Case with start column from "{start_from_column}" not '
+                f'implemented'
+            )
+            raise NotImplementedError(msg)
+
+
+@pytest.fixture(
+    params=range(1, 6),
+    ids=tuple(f'{count} periods' for count in range(1, 6)),
+)
+def count_periods(request: SubRequest) -> int:
+    """Fixture with count periods.
+
+    :param SubRequest request: pytest request with fixture param.
+    :returns: count periods.
+    """
+    return request.param  # type: ignore [no-any-return]

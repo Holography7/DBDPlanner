@@ -34,7 +34,7 @@ iniconfig==2.0.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-mypy==1.11.0
+mypy==1.11.1
     # via dbdplanner (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -84,7 +84,7 @@ pyyaml==6.0.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-ruff==0.5.5
+ruff==0.5.6
     # via dbdplanner (pyproject.toml)
 setuptools==72.1.0
     # via dbdplanner (pyproject.toml)
@@ -94,7 +94,7 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.2.31
+uv==0.2.33
     # via dbdplanner (pyproject.toml)
 virtualenv==20.26.3
     # via

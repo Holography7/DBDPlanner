@@ -1,16 +1,15 @@
-import itertools
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, ClassVar, Literal, Self
 
 import pytest
+from PIL.Image import Resampling
 
 from src.constants import SETTINGS_FILE_PATH
 from src.enums import StrColor
 from src.exceptions import SettingsParsingError
 from src.settings_parser import SettingsParser
-from src.tests.utils import product_str
 from src.types import BoxTuple, RGBColor, Size
 from src.utils import correct_paths
 
@@ -136,6 +135,9 @@ class TestSettingsParser:
         background_color = self.get_expected_color(raw['background_color'])
         plan_margins = self.get_expected_box_tuple(raw['plan_margins'])
         cell_paddings = self.get_expected_box_tuple(raw['cell_paddings'])
+        resampling_method = self.get_expected_resampling(
+            raw['resampling_method'],
+        )
         return {
             'header_font_size': raw['header_font_size'],
             'body_font_size': raw['body_font_size'],
@@ -145,6 +147,7 @@ class TestSettingsParser:
             'plan_margins': plan_margins,
             'cell_paddings': cell_paddings,
             'cell_size': Size(*raw['cell_size']),
+            'resampling_method': resampling_method,
         }
 
     @staticmethod
@@ -211,28 +214,48 @@ class TestSettingsParser:
                 msg = f'Unexpected len of value: {len(value)}, max is 4'
                 raise ValueError(msg)
 
+    @staticmethod
+    def get_expected_resampling(value: str | Resampling) -> Resampling:
+        """Get expected resampling method for testing.
+
+        :param str | Resampling value: initial value.
+        :returns: Resampling instance.
+        """
+        if isinstance(value, Resampling):
+            return value
+        return Resampling.__members__[value.upper()]
+
     @pytest.mark.parametrize(
-        ('color_format', 'count_box_numbers'),
-        itertools.product(('HTML', 'RGB'), range(5)),
-        ids=product_str(
-            ('Color is HTML word', 'Color is RGB'),
-            tuple(
-                f'Paddings and margins is {box_format}'
-                for box_format in (
-                    'integer',
-                    *(f'list with {count} integers' for count in range(1, 5)),
-                )
-            ),
+        'color_format',
+        ['HTML', 'RGB'],
+        ids=('Color is HTML word', 'Color is RGB'),
+    )
+    @pytest.mark.parametrize(
+        'resampling_format',
+        ['str', 'enum'],
+        ids=('Resampling format = str', 'Resampling format = enum'),
+    )
+    @pytest.mark.parametrize(
+        'count_box_numbers',
+        range(5),
+        ids=tuple(
+            f'Paddings and margins is {box_format}'
+            for box_format in (
+                'integer',
+                *(f'list with {count} integers' for count in range(1, 5)),
+            )
         ),
     )
     def test_parse_data(
         self: Self,
         color_format: Literal['HTML', 'RGB'],
+        resampling_format: Literal['str', 'enum'],
         count_box_numbers: int,
     ) -> None:
         """Testing parsing settings from dict.
 
         :param Literal['HTML', 'RGB'] color_format: color format.
+        :param Literal['str', 'enum'] resampling_format: resampling format.
         :param int count_box_numbers: count numbers in box settings. If zero,
          then it will be as integer.
         :returns: None
@@ -246,6 +269,10 @@ class TestSettingsParser:
             for color_field in self.COLOR_FIELDS:
                 rgb_value = self.RGB_COLORS[data['customization'][color_field]]
                 data['customization'][color_field] = rgb_value
+        if resampling_format == 'enum':
+            key = data['customization']['resampling_method'].upper()
+            value = Resampling.__members__[key]
+            data['customization']['resampling_method'] = value
         self.set_box_values(
             customization=data['customization'],
             count_numbers=count_box_numbers,
@@ -274,6 +301,7 @@ class TestSettingsParser:
         assert customization.plan_margins == expected['plan_margins']
         assert customization.cell_paddings == expected['cell_paddings']
         assert customization.cell_size == expected['cell_size']
+        assert customization.resampling_method == expected['resampling_method']
 
     def test_parse_wrong_data(self: Self) -> None:
         """Testing parsing settings from dict with wrong data.

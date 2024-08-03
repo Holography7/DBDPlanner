@@ -16,19 +16,19 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.2.31"]
+installer = ["uv==0.2.33"]
 dev_tools = [
     "cfgv==3.4.0",
     "distlib==0.3.8",
     "filelock==3.15.4",
     "identify==2.6.0",
-    "mypy==1.11.0",
+    "mypy==1.11.1",
     "mypy-extensions==1.0.0",
     "nodeenv==1.9.1",
     "platformdirs==4.2.2",
     "pre-commit==3.8.0",
     "pyyaml==6.0.1",
-    "ruff==0.5.5",
+    "ruff==0.5.6",
     "virtualenv==20.26.3",
 ]
 test_tools = [
