@@ -8,7 +8,7 @@ import pytest
 from PIL.ImageFont import FreeTypeFont
 from pytest_mock import MockFixture
 
-from src.constants import FONT_EXTENSION
+from src.dataclasses import FontParamsForLoading
 from src.global_mappings import FontMapping, PlaceholderMapping
 from src.settings import SETTINGS
 
@@ -399,9 +399,10 @@ class TestFontMapping:
         family = mocked_font.font.family
         style = mocked_font.font.style
         size = mocked_font.size
+        font_params = FontParamsForLoading(path=mocked_font_path, size=size)
         mapping = FontMapping()
 
-        mapping.load(path=mocked_font_path, size=mocked_font.size)
+        mapping.load(font_params=font_params)
 
         assert mapping[family][style][size] == mocked_font
         assert mocked_font_path in mapping
@@ -428,48 +429,23 @@ class TestFontMapping:
         truetype_path = 'PIL.ImageFont.truetype'
         mocker.patch(truetype_path, return_value=mocked_font_other_size)
         mapping = FontMapping()
-        mapping.load(path=mocked_path, size=other_size)
+        font_params_other_size = FontParamsForLoading(
+            path=mocked_path,
+            size=other_size,
+        )
+        mapping.load(font_params=font_params_other_size)
         mocker.patch(truetype_path, return_value=mocked_font)
         family = mocked_font.font.family
         style = mocked_font.font.style
         size = mocked_font.size
+        font_params = FontParamsForLoading(path=mocked_path, size=size)
 
-        mapping.load(path=mocked_path, size=size)
+        mapping.load(font_params=font_params)
 
         assert mapping[family][style][other_size] == mocked_font_other_size
         assert mapping[family][style][size] == mocked_font
         assert mocked_path in mapping
         mapping.clear()
-
-    def test_load_file_not_exists(self: Self, mocker: MockFixture) -> None:
-        """Test loading font to mapping from file that does not exist.
-
-        :param MockFixture mocker: fixture of mock module.
-        :returns: None
-        """
-        mocked_path = mocker.MagicMock(spec_set=Path)
-        mocked_path.exists.return_value = False
-        expected_msg = f'Font not found: {mocked_path}'
-        mapping = FontMapping()
-
-        with pytest.raises(FileNotFoundError, match=expected_msg):
-            mapping.load(path=mocked_path, size=1)
-
-    def test_load_not_ttf(self: Self, mocker: MockFixture) -> None:
-        """Test loading font to mapping from not ttf file.
-
-        :param MockFixture mocker: fixture of mock module.
-        :returns: None
-        """
-        mocked_path = mocker.MagicMock(spec_set=Path)
-        mocked_path.exists.return_value = True
-        expected_msg = (
-            f'Only "{FONT_EXTENSION}" allowed, got {mocked_path.suffix}'
-        )
-        mapping = FontMapping()
-
-        with pytest.raises(ValueError, match=expected_msg):
-            mapping.load(path=mocked_path, size=1)
 
     @pytest.mark.usefixtures('_mock_font_truetype')
     def test_clear(
@@ -483,8 +459,12 @@ class TestFontMapping:
         :param Mock mocked_font_path: fixture with mocked font path.
         :returns: None
         """
+        font_params = FontParamsForLoading(
+            path=mocked_font_path,
+            size=mocked_font.size,
+        )
         mapping = FontMapping()
-        mapping.load(path=mocked_font_path, size=mocked_font.size)
+        mapping.load(font_params=font_params)
 
         mapping.clear()
 

@@ -1,10 +1,13 @@
 import re
+from pathlib import Path
 from typing import Self
 from unittest.mock import Mock
 
 import pytest
+from pytest_mock import MockFixture
 
-from src.dataclasses import FontParams
+from src.constants import FONT_EXTENSION
+from src.dataclasses import FontParams, FontParamsForLoading
 
 
 class TestFontParams:
@@ -35,3 +38,35 @@ class TestFontParams:
 
         with pytest.raises(ValueError, match=expected_msg):
             _ = FontParams.from_font(font=mocked_dummy_font)
+
+
+class TestFontParamsForLoading:
+    """Testing dataclass for loading font from disk."""
+
+    def test_file_not_exists(self: Self, mocker: MockFixture) -> None:
+        """Test creating DTO if file that does not exist.
+
+        :param MockFixture mocker: fixture of mock module.
+        :returns: None
+        """
+        mocked_path = mocker.MagicMock(spec_set=Path)
+        mocked_path.exists.return_value = False
+        expected_msg = f'Font does not exists: {mocked_path}'
+
+        with pytest.raises(FileNotFoundError, match=expected_msg):
+            FontParamsForLoading(path=mocked_path, size=1)
+
+    def test_not_ttf(self: Self, mocker: MockFixture) -> None:
+        """Test creating DTO if file is not .ttf.
+
+        :param MockFixture mocker: fixture of mock module.
+        :returns: None
+        """
+        mocked_path = mocker.MagicMock(spec_set=Path)
+        mocked_path.exists.return_value = True
+        expected_msg = (
+            f'Only "{FONT_EXTENSION}" allowed, got {mocked_path.suffix}'
+        )
+
+        with pytest.raises(ValueError, match=expected_msg):
+            FontParamsForLoading(path=mocked_path, size=1)

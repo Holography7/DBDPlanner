@@ -7,7 +7,7 @@ import pytest
 from PIL import ImageDraw
 from pytest_mock import MockFixture
 
-from src.dataclasses import FontParams
+from src.dataclasses import FontParams, FontParamsForLoading
 from src.enums import StrColor
 from src.global_mappings import FontMapping, PlaceholderMapping
 from src.renderer import PlanRenderer
@@ -144,14 +144,14 @@ class TestPlanRenderer:
     @pytest.mark.usefixtures('_mock_font_truetype')
     def test_get_font(
         self: Self,
-        font_param: FontParams | Mock | None,
+        font_param_to_get_font: FontParams | FontParamsForLoading | Mock,
         mocked_font: Mock,
         mocked_path_settings: PathSettings,
     ) -> None:
         """Test getting font.
 
-        :param FontParams | Mock | None font_param: fixture with font
-         parameter that will pass to method.
+        :param FontParams | FontParamsForLoading | Mock font_param_to_get_font:
+         fixture with font parameter that will pass to method.
         :param Mock mocked_font: fixture with mocked font.
         :param PathSettings mocked_path_settings: fixture with mocked path
          settings.
@@ -164,7 +164,7 @@ class TestPlanRenderer:
             settings=settings,
         )
 
-        actual = renderer.get_font(font=font_param)
+        actual = renderer.get_font(font=font_param_to_get_font)
 
         assert actual == mocked_font
         font_mapping.clear()
@@ -281,7 +281,7 @@ class TestPlanRenderer:
     def test_draw_header(
         self: Self,
         dimensions: Dimensions,
-        font_param: FontParams | Mock | None,
+        font_param: FontParams | FontParamsForLoading | Mock | None,
         mocked_renderer_settings: Settings,
     ) -> None:
         """Testing drawing header.
@@ -289,8 +289,8 @@ class TestPlanRenderer:
         As this method returns None, this test checks that this method not
         fails.
         :param Dimensions dimensions: fixture of dimensions of plan.
-        :param FontParams | Mock | None font_param: fixture with font
-         parameter that will pass to method.
+        :param FontParams | FontParamsForLoading | Mock | None font_param:
+         fixture with font parameter that will pass to method.
         :param Settings mocked_renderer_settings: fixture with mocked settings:
          paths to fonts, plan_margins, cell_paddings and cell_size.
         :returns: None
@@ -386,7 +386,7 @@ class TestPlanRenderer:
         self: Self,
         dimensions: Dimensions,
         mocked_placeholder: Mock,
-        font_param: FontParams | Mock | None,
+        font_param: FontParams | FontParamsForLoading | Mock | None,
         mocked_renderer_settings: Settings,
         start_from_column: int,
     ) -> None:
@@ -396,8 +396,8 @@ class TestPlanRenderer:
         fails.
         :param Dimensions dimensions: fixture of dimensions of plan.
         :param Mock mocked_placeholder: fixture with mocked placeholder.
-        :param FontParams | Mock | None font_param: fixture with font
-         parameter that will pass to method.
+        :param FontParams | FontParamsForLoading | Mock | None font_param:
+         fixture with font parameter that will pass to method.
         :param Settings mocked_renderer_settings: fixture with mocked settings:
          paths to fonts, plan_margins, cell_paddings and cell_size.
         :param int start_from_column: fixture with column index where need to

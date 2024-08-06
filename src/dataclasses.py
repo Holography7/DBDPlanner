@@ -1,7 +1,10 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Self
 
 from PIL.ImageFont import FreeTypeFont
+
+from src.constants import FONT_EXTENSION
 
 
 @dataclass
@@ -31,3 +34,26 @@ class FontParams:
             style=font.font.style,
             size=font.size,
         )
+
+
+@dataclass
+class FontParamsForLoading:
+    """Dataclass of font parameters for loading from disk.
+
+    File must exist and with .ttf extension.
+    """
+
+    path: Path
+    size: float
+
+    def __post_init__(self: Self) -> None:
+        """Validate that path exists and desires to .ttf font.
+
+        :returns: None
+        """
+        if not self.path.exists():
+            msg = f'Font does not exists: {self.path}'
+            raise FileNotFoundError(msg)
+        if self.path.suffix != FONT_EXTENSION:
+            msg = f'Only "{FONT_EXTENSION}" allowed, got {self.path.suffix}'
+            raise ValueError(msg)

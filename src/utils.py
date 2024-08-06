@@ -58,4 +58,7 @@ def correct_paths(initial: dict[str, str]) -> dict[str, str]:
     :returns: dict with paths.
     """
     parent = get_root()
-    return {name: f'{parent}{path}' for name, path in initial.items()}
+    return {
+        name: path if Path(path).is_absolute() else f'{parent}{path}'
+        for name, path in initial.items()
+    }

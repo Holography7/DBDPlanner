@@ -6,7 +6,7 @@ from PIL import Image, ImageFont, ImageOps
 from PIL.Image import Resampling
 from PIL.ImageFont import FreeTypeFont
 
-from src.constants import FONT_EXTENSION
+from src.dataclasses import FontParamsForLoading
 from src.settings import SETTINGS
 from src.singleton import SingletonABCMeta
 from src.types import Size
@@ -181,7 +181,7 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
         :returns: None
         """
         self.__mapping: dict[str, dict[str, dict[float, FreeTypeFont]]] = {}
-        self.__path_mapping: dict[Path, dict[int, FreeTypeFont]] = {}
+        self.__path_mapping: dict[Path, dict[float, FreeTypeFont]] = {}
 
     def add(self: Self, item: FreeTypeFont) -> None:
         """Add font to mapping.
@@ -273,27 +273,26 @@ class FontMapping(BaseMapping, AddOrUpdateMixin):
             self.__mapping[family] = {style: {size: item}}
         return item, font_created
 
-    def load(self: Self, path: Path, size: int) -> FreeTypeFont:
+    def load(self: Self, font_params: FontParamsForLoading) -> FreeTypeFont:
         """Load font from file and add to mapping.
 
-        :param Path path: path to font file (TrueType only).
-        :param int size: font size.
+        Supports only TrueType font
+        :param FontParamsForLoading font_params: parameters for loading font.
         :returns: loaded font.
         """
-        if not path.exists():
-            msg = f'Font not found: {path}'
-            raise FileNotFoundError(msg)
-        if path.suffix != FONT_EXTENSION:
-            msg = f'Only "{FONT_EXTENSION}" allowed, got {path.suffix}'
-            raise ValueError(msg)
         try:
-            return self.__path_mapping[path][size]
+            return self.__path_mapping[font_params.path][font_params.size]
         except KeyError:
-            font = ImageFont.truetype(font=path, size=size)
-            if path in self.__path_mapping:
-                self.__path_mapping[path][size] = font
+            font = ImageFont.truetype(
+                font=font_params.path,
+                size=font_params.size,
+            )
+            if font_params.path in self.__path_mapping:
+                self.__path_mapping[font_params.path][font_params.size] = font
             else:
-                self.__path_mapping[path] = {size: font}
+                self.__path_mapping[font_params.path] = {
+                    font_params.size: font,
+                }
         self.add_or_update(item=font)
         return font
 

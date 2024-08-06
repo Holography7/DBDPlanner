@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw
 from PIL.ImageFont import FreeTypeFont
 
 from src.constants import PILLOW_MODE, TEXT_ANCHOR
-from src.dataclasses import FontParams
+from src.dataclasses import FontParams, FontParamsForLoading
 from src.enums import StrColor
 from src.global_mappings import FontMapping, PlaceholderMapping
 from src.schemas import Settings
@@ -39,15 +39,15 @@ class PlanRenderer:
         # Initializing attributes
         self.placeholder_mapping = PlaceholderMapping()
         self.font_mapping = FontMapping()
-        self.header_font = self.font_mapping.load(
+        self.header_font = FontParamsForLoading(
             path=settings.paths.header_font,
             size=settings.customization.header_font_size,
         )
-        self.header_text_color = settings.customization.header_text_color
-        self.body_font = self.font_mapping.load(
+        self.body_font = FontParamsForLoading(
             path=settings.paths.body_font,
             size=settings.customization.body_font_size,
         )
+        self.header_text_color = settings.customization.header_text_color
         self.body_text_color = settings.customization.body_text_color
         self.dimensions = dimensions
         self.cell_size = settings.customization.cell_size
@@ -72,24 +72,21 @@ class PlanRenderer:
 
     def get_font(
         self: Self,
-        font: FontParams | FreeTypeFont | None = None,
+        font: FontParams | FontParamsForLoading | FreeTypeFont,
     ) -> FreeTypeFont:
         """Get font.
 
         If got FontParams, then try to get font from mapping (could raise
         ValueError if this font not loaded. You should load it manually using
-        font_mapping attribute). If got FreeTypeFont, return this font, but add
-        it to font_mapping. If got None, then will use header font, loaded from
-        settings.
-        :param FontParams | FreeTypeFont | None font: font object.
+        font_mapping attribute). If got FontParamsForLoading, then return font
+        that will load from disk. If this font was loaded early, then this font
+        will not load again and return font from mapping. If got FreeTypeFont,
+        then return this font, but also add it to font mapping.
+        :param FontParams | FontParamsForLoading | FreeTypeFont font: font
+         parameters or object.
         :returns: font object
         """
         match font:
-            case None:
-                return self.header_font
-            case FreeTypeFont():
-                self.font_mapping.add_or_update(item=font)
-                return font
             case FontParams():
                 family = font.family
                 style = font.style
@@ -99,6 +96,11 @@ class PlanRenderer:
                 except KeyError as exc:
                     msg = f'Font {family} {style} with size {size} not found'
                     raise ValueError(msg) from exc
+            case FontParamsForLoading():
+                return self.font_mapping.load(font_params=font)
+            case FreeTypeFont():
+                self.font_mapping.add_or_update(item=font)
+                return font
             case _:
                 msg = f'Unsupported type for getting font: {type(font)}'
                 raise TypeError(msg)
@@ -106,18 +108,21 @@ class PlanRenderer:
     def draw_header(
         self: Self,
         headers: Sequence[str],
-        font: FontParams | FreeTypeFont | None = None,
+        font: FontParams | FontParamsForLoading | FreeTypeFont | None = None,
     ) -> None:
         """Draw header like in month calendar: Mon, Tue, Wed etc.
 
         :param Sequence[str] headers: sequence of text to draw in header. Count
          must be same as count columns that you specified in initialization.
-        :param FontParams | FreeTypeFont | None font: font of headers. If got
-        FontParams, then try to get font from mapping (could raise ValueError
-        if this font not loaded. You should load it manually using font_mapping
-        attribute). If got FreeTypeFont, then will use that font directly (
-        automatically add this font to font_mapping). If got None, then will
-        use header font, loaded from settings.
+        :param FontParams | FontParamsForLoading | FreeTypeFont | None font:
+         font of headers. If got FontParams, then try to get font from mapping
+         (could raise ValueError if this font not loaded. You should load it
+         manually using font_mapping attribute). If got FontParamsForLoading,
+         then return font that will load from disk. If this font was loaded
+         early, then this font will not load again and return font from
+         mapping. If got FreeTypeFont, then will use that font directly
+         (automatically add this font to font_mapping). If got None, then will
+         use header font, loaded from settings.
         :returns: None
         """
         if len(headers) != self.dimensions.columns:
@@ -126,14 +131,16 @@ class PlanRenderer:
                 f'{len(headers)}'
             )
             raise ValueError(msg)
-        font = self.get_font(font=font)
+        if not font:
+            font = self.header_font
+        font_object = self.get_font(font=font)
         for column, text in enumerate(headers):
             # first row is header always
             cell = PlanCell(row=0, column=column)
             cell_box = self.get_cell_box(cell=cell)
             self.draw_text_in_box(
                 text=text,
-                font=font,
+                font=font_object,
                 color=self.header_text_color,
                 box=cell_box,
             )
@@ -142,7 +149,7 @@ class PlanRenderer:
         self: Self,
         elements: Sequence[str],
         placeholders: Sequence[Image.Image],
-        font: FontParams | FreeTypeFont | None = None,
+        font: FontParams | FontParamsForLoading | FreeTypeFont | None = None,
         start_from_column: int = 0,
     ) -> None:
         """Draw plan.
@@ -158,12 +165,15 @@ class PlanRenderer:
          ID of original object. After caching, every time before change size of
          image, renderer will try to find already resized placeholder to save
          CPU time and reuse it.
-        :param FontParams | FreeTypeFont | None font: font of elements. If got
-         FontParams, then try to get font from mapping (could raise ValueError
-         if this font not loaded. You should load it manually using
-         font_mapping attribute). If got FreeTypeFont, then will use that font
-         directly (automatically add this font to font_mapping). If got None,
-         then will use body font, loaded from settings.
+        :param FontParams | FontParamsForLoading | FreeTypeFont | None font:
+         font of elements. If got FontParams, then try to get font from mapping
+         (could raise ValueError if this font not loaded. You should load it
+         manually using font_mapping attribute). If got FontParamsForLoading,
+         then return font that will load from disk. If this font was loaded
+         early, then this font will not load again and return font from
+         mapping. If got FreeTypeFont, then will use that font directly
+         (automatically add this font to font_mapping). If got None, then will
+         use body font, loaded from settings.
         :param int start_from_column: index of column of first row where need
          to start fill cells by elements and placeholders.
         :returns: None
@@ -175,7 +185,9 @@ class PlanRenderer:
         if start_from_column < 0 or start_from_column > columns:
             msg = f'Column index must be between 0 and {columns}.'
             raise ValueError(msg)
-        font = self.get_font(font=font)
+        if not font:
+            font = self.body_font
+        font_object = self.get_font(font=font)
         for element_num, placeholder in enumerate(placeholders):
             shifted_element_num = element_num + start_from_column
             cell = PlanCell(
@@ -205,7 +217,7 @@ class PlanRenderer:
             )
             self.draw_text_in_box(
                 text=elements[element_num],
-                font=font,
+                font=font_object,
                 color=self.body_text_color,
                 box=placeholder_box,
             )
