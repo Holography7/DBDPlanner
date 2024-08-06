@@ -42,7 +42,7 @@ def check_updates() -> None:
     :returns: None
     """
     output = run_subprocess_command(
-        ('pip', 'list', '--outdated'),
+        ('pip', 'list', '--outdated', '--exclude', 'pydantic-core'),
     )
     if output:
         logging.warning(output)

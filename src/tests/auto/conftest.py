@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from PIL.ImageFont import FreeTypeFont
 from pytest_mock import MockFixture
 
-from src.dataclasses import FontParams
+from src.dataclasses import FontParams, FontParamsForLoading
 from src.global_mappings import FontMapping
 from src.schemas import CustomizationSettings, PathSettings, Settings
 from src.settings import SETTINGS
@@ -322,29 +322,78 @@ def mocked_font_path(mocker: MockFixture) -> Mock:
 
 
 @pytest.fixture(
-    params=('font params', 'font object', None),
-    ids=('Font params', 'Manually loaded font', 'Default font'),
+    params=('font params', 'font params for loading', 'font object'),
+    ids=('Font params', 'Font params for loading', 'Manually loaded font'),
 )
-def font_param(
+def font_param_to_get_font(
     request: SubRequest,
     mocked_font: Mock,
-) -> Generator[FontParams | Mock | None, None, None]:
+    mocker: MockFixture,
+) -> Generator[FontParams | FontParamsForLoading | Mock, None, None]:
     """Font parameter for getting font from renderer.
 
     :param SubRequest request: pytest request with fixture param.
     :param Mock mocked_font: fixture with mocked font.
+    :param MockFixture mocker: fixture of mock module.
     :returns: None (default font), FontParams or mocked font object.
     """
     match request.param:
-        case None:
-            # Use font_size fixture in test to load font with this size as
-            # default
+        case 'font params':
+            font_mapping = FontMapping()
+            font_mapping.add(item=mocked_font)
+            yield FontParams.from_font(font=mocked_font)
+            font_mapping.clear()
+        case 'font params for loading':
+            mocked_path = mocker.MagicMock(spec_set=Path)
+            mocked_path.exists.return_value = True
+            mocked_path.suffix = '.ttf'
+            yield FontParamsForLoading(path=mocked_path, size=mocked_font.size)
+        case 'font object':
+            yield mocked_font
+        case _:
+            msg = f'Case with parameter {request.param} not implemented'
+            raise NotImplementedError(msg)
+
+
+@pytest.fixture(
+    params=(
+        'font params',
+        'font params for loading',
+        'font object',
+        'default',
+    ),
+    ids=(
+        'Font params',
+        'Font params for loading',
+        'Manually loaded font',
+        'Default font',
+    ),
+)
+def font_param(
+    request: SubRequest,
+    mocked_font: Mock,
+    mocker: MockFixture,
+) -> Generator[FontParams | FontParamsForLoading | Mock | None, None, None]:
+    """Font parameter for using in drawing header and plan.
+
+    :param SubRequest request: pytest request with fixture param.
+    :param Mock mocked_font: fixture with mocked font.
+    :param MockFixture mocker: fixture of mock module.
+    :returns: None (default font), FontParams or mocked font object.
+    """
+    match request.param:
+        case 'default':
             yield None
         case 'font params':
             font_mapping = FontMapping()
             font_mapping.add(item=mocked_font)
             yield FontParams.from_font(font=mocked_font)
             font_mapping.clear()
+        case 'font params for loading':
+            mocked_path = mocker.MagicMock(spec_set=Path)
+            mocked_path.exists.return_value = True
+            mocked_path.suffix = '.ttf'
+            yield FontParamsForLoading(path=mocked_path, size=mocked_font.size)
         case 'font object':
             yield mocked_font
         case _:
