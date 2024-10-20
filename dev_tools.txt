@@ -10,11 +10,11 @@ cfgv==3.4.0
     #   pre-commit
 click==8.1.7
     # via dbdplanner (pyproject.toml)
-coverage==7.6.1
+coverage==7.6.3
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
-distlib==0.3.8
+distlib==0.3.9
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
@@ -22,11 +22,11 @@ execnet==2.1.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-xdist
-filelock==3.15.4
+filelock==3.16.1
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
-identify==2.6.0
+identify==2.6.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
@@ -34,7 +34,7 @@ iniconfig==2.0.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-mypy==1.11.1
+mypy==1.12.1
     # via dbdplanner (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -48,11 +48,11 @@ packaging==24.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-pillow==10.4.0
+pillow==11.0.0
     # via dbdplanner (pyproject.toml)
 pip==24.2
     # via dbdplanner (pyproject.toml)
-platformdirs==4.2.2
+platformdirs==4.3.6
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
@@ -60,15 +60,15 @@ pluggy==1.5.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-pre-commit==3.8.0
+pre-commit==4.0.1
     # via dbdplanner (pyproject.toml)
-pydantic==2.8.2
+pydantic==2.9.2
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.20.1
+pydantic-core==2.23.4
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
-pytest==8.3.2
+pytest==8.3.3
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
@@ -80,13 +80,13 @@ pytest-mock==3.14.0
     # via dbdplanner (pyproject.toml)
 pytest-xdist==3.6.1
     # via dbdplanner (pyproject.toml)
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-ruff==0.5.6
+ruff==0.7.0
     # via dbdplanner (pyproject.toml)
-setuptools==72.1.0
+setuptools==75.2.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
@@ -94,9 +94,9 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.2.33
+uv==0.4.24
     # via dbdplanner (pyproject.toml)
-virtualenv==20.26.3
+virtualenv==20.27.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
