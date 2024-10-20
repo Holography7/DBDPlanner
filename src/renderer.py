@@ -329,7 +329,7 @@ class PlanRenderer:
             font=font,
             anchor=TEXT_ANCHOR,
         )
-        return Size(width=width, height=height)
+        return Size(width=int(width), height=int(height))
 
     def save_image(self: Self, path: Path) -> None:
         """Save plan image.
