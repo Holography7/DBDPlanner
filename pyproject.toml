@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.4.24"]
+installer = ["uv==0.4.25"]
 dev_tools = [
     "cfgv==3.4.0",
     "distlib==0.3.9",
@@ -32,7 +32,7 @@ dev_tools = [
     "virtualenv==20.27.0",
 ]
 test_tools = [
-    "coverage==7.6.3",
+    "coverage==7.6.4",
     "execnet==2.1.1",
     "iniconfig==2.0.0",
     "packaging==24.1",

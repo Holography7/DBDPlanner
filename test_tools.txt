@@ -6,7 +6,7 @@ annotated-types==0.7.0
     #   pydantic
 click==8.1.7
     # via dbdplanner (pyproject.toml)
-coverage==7.6.3
+coverage==7.6.4
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
