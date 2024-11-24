@@ -40,7 +40,7 @@ then
   installed_python_version=$(python -V 2>&1 | grep -Po '(?<=Python )(.+)')
   if ! [[ "$installed_python_version" =~ 3\.1[23].* ]]
   then
-    echo "Your installed Python is outdated ($(python -V)) for this project. Install Python 3.12 or higher."
+    echo "Your installed Python is outdated ($installed_python_version) for this project. Install Python 3.12 or higher."
     exit 1
   else
     echo "Detected system python $installed_python_version"
