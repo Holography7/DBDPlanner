@@ -8,20 +8,20 @@ click==8.1.7
     # via dbdplanner (pyproject.toml)
 pillow==11.0.0
     # via dbdplanner (pyproject.toml)
-pip==24.2
+pip==24.3.1
     # via dbdplanner (pyproject.toml)
-pydantic==2.9.2
+pydantic==2.10.1
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.23.4
+pydantic-core==2.27.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
-setuptools==75.2.0
+setuptools==75.6.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
     #   pydantic-core
-wheel==0.44.0
+wheel==0.45.1
     # via dbdplanner (pyproject.toml)

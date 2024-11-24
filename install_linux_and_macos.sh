@@ -53,6 +53,7 @@ else
     echo "Python $python_version not found. Probably, you need to install it in your system."
     exit 1
   fi
+  echo "Detected python $python_version"
 fi
 
 # Create virtual environment

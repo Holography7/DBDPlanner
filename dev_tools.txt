@@ -10,7 +10,7 @@ cfgv==3.4.0
     #   pre-commit
 click==8.1.7
     # via dbdplanner (pyproject.toml)
-coverage==7.6.4
+coverage==7.6.8
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
@@ -26,7 +26,7 @@ filelock==3.16.1
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
-identify==2.6.1
+identify==2.6.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
@@ -34,7 +34,7 @@ iniconfig==2.0.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-mypy==1.12.1
+mypy==1.13.0
     # via dbdplanner (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -44,13 +44,13 @@ nodeenv==1.9.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-packaging==24.1
+packaging==24.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
 pillow==11.0.0
     # via dbdplanner (pyproject.toml)
-pip==24.2
+pip==24.3.1
     # via dbdplanner (pyproject.toml)
 platformdirs==4.3.6
     # via
@@ -62,9 +62,9 @@ pluggy==1.5.0
     #   pytest
 pre-commit==4.0.1
     # via dbdplanner (pyproject.toml)
-pydantic==2.9.2
+pydantic==2.10.1
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.23.4
+pydantic-core==2.27.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
@@ -74,7 +74,7 @@ pytest==8.3.3
     #   pytest-cov
     #   pytest-mock
     #   pytest-xdist
-pytest-cov==5.0.0
+pytest-cov==6.0.0
     # via dbdplanner (pyproject.toml)
 pytest-mock==3.14.0
     # via dbdplanner (pyproject.toml)
@@ -84,9 +84,9 @@ pyyaml==6.0.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-ruff==0.7.0
+ruff==0.8.0
     # via dbdplanner (pyproject.toml)
-setuptools==75.2.0
+setuptools==75.6.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
@@ -94,11 +94,11 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.4.25
+uv==0.5.4
     # via dbdplanner (pyproject.toml)
-virtualenv==20.27.0
+virtualenv==20.27.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
-wheel==0.44.0
+wheel==0.45.1
     # via dbdplanner (pyproject.toml)
