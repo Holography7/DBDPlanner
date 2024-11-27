@@ -37,8 +37,8 @@ then
     exit 1
   fi
 
-  installed_python_version=$(python -V 2>&1 | grep -Po '(?<=Python )(.+)')
-  if ! [[ "$installed_python_version" =~ 3\.1[23].* ]]
+  installed_python_version=$(python --version 2>&1 | grep -oE '[0-9]+\.[0-9]+')
+  if ! [[ "$installed_python_version" =~ 3\.1[23] ]]
   then
     echo "Your installed Python is outdated ($installed_python_version) for this project. Install Python 3.12 or higher."
     exit 1
@@ -46,7 +46,7 @@ then
     echo "Detected system python $installed_python_version"
   fi
 else
-  # If user not selected python version with "--python-version" then just check that this version just exists
+  # If user selected python version with "--python-version" then just check that this version just exists
   python_command="python$python_version"
   if ! command -v "$python_command" &> /dev/null
   then

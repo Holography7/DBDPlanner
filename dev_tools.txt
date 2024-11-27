@@ -26,7 +26,7 @@ filelock==3.16.1
     # via
     #   dbdplanner (pyproject.toml)
     #   virtualenv
-identify==2.6.2
+identify==2.6.3
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit
@@ -62,7 +62,7 @@ pluggy==1.5.0
     #   pytest
 pre-commit==4.0.1
     # via dbdplanner (pyproject.toml)
-pydantic==2.10.1
+pydantic==2.10.2
     # via dbdplanner (pyproject.toml)
 pydantic-core==2.27.1
     # via
@@ -94,9 +94,9 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-uv==0.5.4
+uv==0.5.5
     # via dbdplanner (pyproject.toml)
-virtualenv==20.27.1
+virtualenv==20.28.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pre-commit

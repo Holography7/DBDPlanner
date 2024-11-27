@@ -10,18 +10,18 @@ dependencies = [
     "annotated-types==0.7.0",
     "click==8.1.7",
     "Pillow==11.0.0",
-    "pydantic==2.10.1",
+    "pydantic==2.10.2",
     "pydantic-core==2.27.1",
     "typing-extensions==4.12.2",
 ]
 
 [project.optional-dependencies]
-installer = ["uv==0.5.4"]
+installer = ["uv==0.5.5"]
 dev_tools = [
     "cfgv==3.4.0",
     "distlib==0.3.9",
     "filelock==3.16.1",
-    "identify==2.6.2",
+    "identify==2.6.3",
     "mypy==1.13.0",
     "mypy-extensions==1.0.0",
     "nodeenv==1.9.1",
@@ -29,7 +29,7 @@ dev_tools = [
     "pre-commit==4.0.1",
     "pyyaml==6.0.2",
     "ruff==0.8.0",
-    "virtualenv==20.27.1",
+    "virtualenv==20.28.0",
 ]
 test_tools = [
     "coverage==7.6.8",

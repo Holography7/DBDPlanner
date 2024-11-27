@@ -30,7 +30,7 @@ pluggy==1.5.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-pydantic==2.10.1
+pydantic==2.10.2
     # via dbdplanner (pyproject.toml)
 pydantic-core==2.27.1
     # via
