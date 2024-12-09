@@ -7,11 +7,35 @@ on:
 permissions:
   pull-requests: write
 jobs:
-  coverage:
+  coverage-3_12:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [ "3.12" ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install uv
+          uv pip install --all-extras -r pyproject.toml --system
+      - name: Run auto tests
+        run: pytest -n auto --cov-config=pyproject.toml --cov=. --cov-report=json --cov-report=term-missing --cov-report=xml
+      - name: Code coverage
+        uses: orgoro/coverage@v3.1
+        with:
+          coverageFile: coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          thresholdAll: 0.9
+  coverage-3_13:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.13" ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}

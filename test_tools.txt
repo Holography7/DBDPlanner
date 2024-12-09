@@ -6,7 +6,7 @@ annotated-types==0.7.0
     #   pydantic
 click==8.1.7
     # via dbdplanner (pyproject.toml)
-coverage==7.6.1
+coverage==7.6.9
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
@@ -18,42 +18,42 @@ iniconfig==2.0.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-packaging==24.1
+packaging==24.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-pillow==10.4.0
+pillow==11.0.0
     # via dbdplanner (pyproject.toml)
-pip==24.2
+pip==24.3.1
     # via dbdplanner (pyproject.toml)
 pluggy==1.5.0
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest
-pydantic==2.8.2
+pydantic==2.10.3
     # via dbdplanner (pyproject.toml)
-pydantic-core==2.20.1
+pydantic-core==2.27.1
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
-pytest==8.3.2
+pytest==8.3.4
     # via
     #   dbdplanner (pyproject.toml)
     #   pytest-cov
     #   pytest-mock
     #   pytest-xdist
-pytest-cov==5.0.0
+pytest-cov==6.0.0
     # via dbdplanner (pyproject.toml)
 pytest-mock==3.14.0
     # via dbdplanner (pyproject.toml)
 pytest-xdist==3.6.1
     # via dbdplanner (pyproject.toml)
-setuptools==72.1.0
+setuptools==75.6.0
     # via dbdplanner (pyproject.toml)
 typing-extensions==4.12.2
     # via
     #   dbdplanner (pyproject.toml)
     #   pydantic
     #   pydantic-core
-wheel==0.44.0
+wheel==0.45.1
     # via dbdplanner (pyproject.toml)

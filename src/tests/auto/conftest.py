@@ -15,7 +15,7 @@ from src.settings import SETTINGS
 from src.types import BoxTuple, Dimensions, PlanCell, Size
 
 
-@pytest.fixture()
+@pytest.fixture
 def _mock_textbbox_method(
     mocked_textbox_size: Size,
     mocker: MockFixture,
@@ -33,7 +33,7 @@ def _mock_textbbox_method(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def _mock_drawing_text(mocker: MockFixture) -> None:
     """Mock method PIL.ImageDraw.ImageDraw.text.
 
@@ -46,7 +46,7 @@ def _mock_drawing_text(mocker: MockFixture) -> None:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def _mock_font_truetype(mocked_font: Mock, mocker: MockFixture) -> None:
     """Mock method PIL.ImageFont.truetype.
 
@@ -61,7 +61,7 @@ def _mock_font_truetype(mocked_font: Mock, mocker: MockFixture) -> None:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def _mock_image_contain(
     resized_placeholder: Mock,
     mocker: MockFixture,
@@ -79,7 +79,7 @@ def _mock_image_contain(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def _mock_image_contain_to_allowable_cell_size(
     resized_placeholder_as_cell: Mock,
     mocker: MockFixture,
@@ -98,7 +98,7 @@ def _mock_image_contain_to_allowable_cell_size(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def _mock_image_paste(mocker: MockFixture) -> None:
     """Mock method PIL.Image.Image.paste.
 
@@ -230,7 +230,7 @@ def cell_size(request: SubRequest) -> Size:
     return Size(*request.param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_placeholder(mocker: MockFixture) -> Mock:
     """Fixture with mocked placeholder.
 
@@ -242,7 +242,7 @@ def mocked_placeholder(mocker: MockFixture) -> Mock:
     return placeholder  # type: ignore [no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def resized_placeholder(mocker: MockFixture) -> Mock:
     """Fixture with mocked resized placeholder.
 
@@ -254,7 +254,7 @@ def resized_placeholder(mocker: MockFixture) -> Mock:
     return placeholder  # type: ignore [no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def resized_placeholder_as_cell(
     cell_paddings: BoxTuple,
     cell_size: Size,
@@ -275,7 +275,7 @@ def resized_placeholder_as_cell(
     return placeholder  # type: ignore [no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_font(mocker: MockFixture) -> Mock:
     """Fixture with mocked font.
 
@@ -308,7 +308,7 @@ def mocked_dummy_font(request: SubRequest, mocker: MockFixture) -> Mock:
     return font  # type: ignore [no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_font_path(mocker: MockFixture) -> Mock:
     """Fixture with mocked path to font.
 
@@ -401,7 +401,7 @@ def font_param(
             raise NotImplementedError(msg)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_cell_settings(
     plan_margins: BoxTuple,
     cell_paddings: BoxTuple,
@@ -423,7 +423,7 @@ def mocked_cell_settings(
     return SETTINGS.customization.model_copy(update=updated_settings)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_path_settings(mocked_font_path: Mock) -> PathSettings:
     """Fixture with path settings with header and body font.
 
@@ -438,7 +438,7 @@ def mocked_path_settings(mocked_font_path: Mock) -> PathSettings:
     return SETTINGS.paths.model_copy(update=updated_settings)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_renderer_settings(
     mocked_path_settings: PathSettings,
     mocked_cell_settings: CustomizationSettings,

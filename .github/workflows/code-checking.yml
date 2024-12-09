@@ -1,7 +1,7 @@
 name: Code checking
 on: [push]
 jobs:
-  linters:
+  linters-python-3_12:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -25,3 +25,27 @@ jobs:
       run: mypy $(git ls-files '*.py')
     - name: Checking updates of packages
       run: python pre-commit.py check-updates
+  linters-python-3_13:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.13" ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install uv
+          uv pip install --all-extras -r pyproject.toml --system
+      - name: Checking with ruff linter
+        run: ruff check $(git ls-files '*.py')
+      - name: Checking with ruff formatter
+        run: ruff format $(git ls-files '*.py') --check
+      - name: Checking with mypy type checker
+        run: mypy $(git ls-files '*.py')
+      - name: Checking updates of packages
+        run: python pre-commit.py check-updates

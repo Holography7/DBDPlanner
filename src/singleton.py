@@ -11,7 +11,7 @@ class SingletonABCMeta(ABCMeta):
     _instances: ClassVar[dict] = {}
 
     # probably not correct typing of return value
-    def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN101 ANN401
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
         """Return single instance of class.
 
         :param Any args: positional arguments for creating class instance.

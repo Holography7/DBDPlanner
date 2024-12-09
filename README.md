@@ -108,6 +108,19 @@ see logs:
 ```commandline
 ./install_linux_and_macos.sh
 ```
+If you wish use specific python version, you can use `--python-version <desire 
+python version>` in both installation scripts. for example, install with python
+3.13 in Windows commandline:
+
+```commandline
+install_windows.bat --python-version 3.13
+```
+
+Same on Linux and MacOS:
+
+```commandline
+./install_linux_and_macos.sh --python-version 3.13
+```
 
 #### Manual installation
 

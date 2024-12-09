@@ -62,7 +62,7 @@ class TestPlanRenderer:
 
         assert result == expected
 
-    @pytest.mark.integration()
+    @pytest.mark.integration
     def test_get_cell_box(
         self: Self,
         plan_cell: PlanCell,
@@ -272,7 +272,7 @@ class TestPlanRenderer:
             box=box_tuple,
         )
 
-    @pytest.mark.integration()
+    @pytest.mark.integration
     @pytest.mark.usefixtures(
         '_mock_textbbox_method',
         '_mock_font_truetype',
@@ -374,7 +374,7 @@ class TestPlanRenderer:
 
         font_mapping.clear()
 
-    @pytest.mark.integration()
+    @pytest.mark.integration
     @pytest.mark.usefixtures(
         '_mock_textbbox_method',
         '_mock_font_truetype',
